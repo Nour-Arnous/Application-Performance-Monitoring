@@ -90,10 +90,15 @@
             font-size: 0.9rem;
         }
     </style>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 
 <!-- body for HTML....... -->
+
 <body>
 
     <!-- Header -->
@@ -181,6 +186,30 @@
             </div>
             {% endfor %}
         </div>
+        <!-- For Charts.js -->
+        <div class="container mt-5">
+            <div class="row">
+                <!-- Line chart -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Evolution of response time and number of request</h5>
+                            <canvas id="performanceChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pie chart -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Error distribution</h5>
+                            <canvas id="errorPieChart" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Go to admin by button-->
         <div class="text-center mt-4">
@@ -194,6 +223,152 @@
 
     <!-- Bootstrap JS  -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- For Charts.js -->
+    <script>
+        // Function for getting data from API and drawing charts
+        async function fetchDataAndRenderCharts() {
+            try {
+                const response = await fetch('/api/metrics/');
+                const data = await response.json();
+
+                // Extracting data from API
+                const labels = data.map(item => {
+                    // Displays the time briefly (hour:min)
+                    const date = new Date(item.timestamp);
+                    return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+                });
+
+                const responseTimes = data.map(item => item.response_time);
+                const requestCounts = data.map(item => item.request_count);
+                const errorCounts = data.map(item => item.error_count);
+                const appNames = data.map(item => item.application_name);
+
+                // Line Chart 
+                const ctxLine = document.getElementById('performanceChart').getContext('2d');
+                new Chart(ctxLine, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Response time (second)',
+                                data: responseTimes,
+                                borderColor: 'rgba(9, 132, 227, 1)',
+                                backgroundColor: 'rgba(9, 132, 227, 0.1)',
+                                tension: 0.3,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Number of requests',
+                                data: requestCounts,
+                                borderColor: 'rgba(0, 184, 148, 1)',
+                                backgroundColor: 'rgba(0, 184, 148, 0.1)',
+                                tension: 0.3,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: { size: 12 }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Response time (second)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Number of requests'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Calculate the distribution of errors per application
+                const errorDistribution = {};
+                data.forEach(item => {
+                    const app = item.application_name;
+                    if (errorDistribution[app]) {
+                        errorDistribution[app] += item.error_count;
+                    } else {
+                        errorDistribution[app] = item.error_count;
+                    }
+                });
+
+                const pieLabels = Object.keys(errorDistribution);
+                const pieData = Object.values(errorDistribution);
+                const colors = [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)'
+                ];
+
+                // --- Pie Chart ---
+                const ctxPie = document.getElementById('errorPieChart').getContext('2d');
+                new Chart(ctxPie, {
+                    type: 'pie',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            data: pieData,
+                            backgroundColor: colors.slice(0, pieLabels.length),
+                            borderColor: 'white',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: { size: 11 }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error('Data retrieval error:', error);
+                document.querySelector('.container .row').innerHTML = `
+                <div class="col-12 text-center text-danger">
+                    <p>Couldn't retrieve data from API Make sure the server is running</p>
+                </div>
+            `;
+            }
+        }
+
+        // when the page is loading excute the function.
+        window.onload = fetchDataAndRenderCharts;
+    </script>
 </body>
 
 </html>

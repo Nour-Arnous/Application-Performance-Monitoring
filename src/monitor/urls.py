@@ -1,7 +1,13 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from .views import home,MetricViewSet
+from rest_framework.routers import DefaultRouter
+
+
+router = DefaultRouter()
+router.register(r'metrics', MetricViewSet)
 
 urlpatterns = [
-    path('home', views.home,name='home'),
+    path('home', home,name='home'),
+    path('', include(router.urls)),
 
 ]
