@@ -1,374 +1,257 @@
 <!DOCTYPE html>
-<html lang="ar">
-
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Performance Monitoring</title>
-    <!-- Bootstrap  -->
+    <title>Applicationa Performance Monitoring System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
-            background: #f4f6f9;
+            background: #f0f2f5;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-
-        .header {
+        .navbar-custom {
+            background: #2d3436;
+            padding: 12px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .navbar-custom .navbar-brand {
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+        .navbar-custom .navbar-brand i {
+            color: #0984e3;
+            margin-left: 8px;
+        }
+        .navbar-custom .nav-link {
+            color: rgba(255,255,255,0.8);
+            transition: 0.3s;
+            font-weight: 500;
+        }
+        .navbar-custom .nav-link:hover {
+            color: white;
+        }
+        .navbar-custom .btn-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border: none;
+            background: none;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .navbar-custom .btn-link:hover {
+            color: white;
+        }
+        .hero {
             background: linear-gradient(135deg, #2d3436, #0984e3);
             color: white;
-            padding: 20px 0;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 80px 0;
+            text-align: center;
         }
-
-        .metric-card {
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .btn-custom {
+            background: #0984e3;
+            color: white;
+            padding: 12px 40px;
+            border-radius: 30px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+            display: inline-block;
+        }
+        .btn-custom:hover {
+            background: #0873c7;
+            color: white;
+            transform: scale(1.05);
+        }
+        .features {
+            padding: 60px 0;
+            flex: 1;
+        }
+        .feature-card {
             background: white;
             border-radius: 16px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s, box-shadow 0.2s;
-            padding: 16px;
-            margin-bottom: 20px;
-            border-right: 5px solid #0984e3;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-        }
-
-        .metric-card .app-name {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #2d3436;
-        }
-
-        .metric-card .value {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #2d3436;
-        }
-
-        .metric-card .label {
-            font-size: 0.85rem;
-            color: #636e72;
-        }
-
-        .badge-response {
-            background-color: #00b894;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-
-        .badge-error {
-            background-color: #e17055;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-
-        .badge-requests {
-            background-color: #0984e3;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-
-        .high-response {
-            border-right-color: #e17055 !important;
-        }
-
-        .high-response .value {
-            color: #e17055;
-        }
-
-        .footer {
+            padding: 30px;
             text-align: center;
-            color: #b2bec3;
-            margin-top: 30px;
-            padding: 20px;
-            font-size: 0.9rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+        }
+        .feature-card i {
+            font-size: 3rem;
+            color: #0984e3;
+            margin-bottom: 20px;
+        }
+        .footer {
+            background: #2d3436;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto;
+        }
+        .footer p {
+            margin: 0;
+        }
+        .cta-section {
+            background: #dfe6e9;
+            padding: 60px 0;
+            text-align: center;
+        }
+        .cta-section h3 {
+            color: #2d3436;
+            font-weight: 700;
         }
     </style>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
-
-
-<!-- body for HTML....... -->
-
 <body>
 
-    <!-- Header -->
-    <div class="header text-center">
-        <h1> Application Performance Dashboard</h1>
-        <p class="mb-0">Last data from monitored applications</p>
-    </div>
-
-    <div class="container">
-        <!-- View quick Statistics -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="p-3 bg-white rounded-3 shadow-sm text-center">
-                    <h5> Number Of Applications</h5>
-                    <h2>{{ metrics|length }}</h2>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="p-3 bg-white rounded-3 shadow-sm text-center">
-                    <h5> Average Response Time</h5>
-                    <h2>
-                        {% if metrics %}
-                        {% with sorted_metrics=metrics|slice:":5"|dictsort:"response_time" %}
-                        {% with first_item=sorted_metrics|first %}
-                        {{ first_item.response_time|floatformat:2 }}
-                        {% endwith %}
-                        {% endwith %}
-
-                        0.00
-                        {% endif %}
-                    </h2>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="p-3 bg-white rounded-3 shadow-sm text-center">
-                    <h5> Total Errors</h5>
-                    <h2>
-                        {% with total=0 %}
-                        {% for m in metrics %}
-                        {{ total|add:m.error_count }} -
-                        {% endfor %}
-                        {% endwith %}
-                    </h2>
-                </div>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-chart-line"></i> APM Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'home' %}">
+                            <i class="fas fa-home"></i> Main
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">
+                                <i class="fas fa-user-circle"></i> {{ user.username }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-link">
+                                    <i class="fas fa-sign-out-alt"></i>Logout
+                                </button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
+    </nav>
 
-        <!-- Show Cards-->
-        <div class="row">
-            {% for metric in metrics %}
-            <div class="col-md-6 col-lg-4">
-                <div class="metric-card {% if metric.response_time > 2 %}high-response{% endif %}">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="app-name">{{ metric.application_name }}</span>
-                        <span class="badge bg-secondary">{{ metric.timestamp|date:"H:i" }}</span>
-                    </div>
-                    <hr>
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="value">{{ metric.response_time }}s</div>
-                            <div class="label">Response Time</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="value">{{ metric.request_count }}</div>
-                            <div class="label">Number Of Requests</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="value">{{ metric.error_count }}</div>
-                            <div class="label">Number Of Errors</div>
-                        </div>
-                    </div>
-                    <div class="mt-2 d-flex justify-content-between">
-                        <span class="badge-response">Normal Time</span>
-                        {% if metric.error_count > 0 %}
-                        <span class="badge-error"> {{ metric.error_count }} Error</span>
-                        {% else %}
-                        <span class="badge-requests">There are no errors</span>
-                        {% endif %}
-                    </div>
-                </div>
+    
+    <section class="hero">
+        <div class="container">
+            <h1>Applications Performance Monitoring System</h1>
+            <p class="lead">Your application in real time easily and professionally</p>
+            <div class="mt-4">
+                <a href="{% url 'register' %}" class="btn-custom">
+                    <i class="fas fa-rocket"></i> Start now for free
+                </a>
             </div>
-            {% empty %}
-            <div class="col-12 text-center">
-                <div class="alert alert-info">No data yet!</div>
-            </div>
-            {% endfor %}
         </div>
-        <!-- For Charts.js -->
-        <div class="container mt-5">
-            <div class="row">
-                <!-- Line chart -->
-                <div class="col-md-8">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">Evolution of response time and number of request</h5>
-                            <canvas id="performanceChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <!-- Pie chart -->
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="text-center mb-5">System features</h2>
+            <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">Error distribution</h5>
-                            <canvas id="errorPieChart" width="200" height="200"></canvas>
-                        </div>
+                    <div class="feature-card">
+                        <i class="fas fa-clock"></i>
+                        <h5>Instantly Monitoring</h5>
+                        <p>Follow your application performance in real time with auto updateing.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-chart-pie"></i>
+                        <h5>Advanced Analysis</h5>
+                        <p>Pie and Line charts help you in performance analysis.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-bell"></i>
+                        <h5>Instantly Alerts</h5>
+                        <p>Obtain notifications when normal performance limits are exceeded.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h5>High security</h5>
+                        <p>An integrated authentication system that protects your data and ensures its privacy.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-code"></i>
+                        <h5>Easy integration</h5>
+                        <p>Simple to allow any application to easily send its data API interface.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h5>Free and open source</h5>
+                        <p>All technologies used are open source and completely free.</p>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
 
-
-        <!-- Go to admin by button-->
-        <div class="text-center mt-4">
-            <a href="/admin" class="btn btn-outline-primary">Managing data through admin</a>
+  
+    <section class="cta-section">
+        <div class="container">
+            <h3>Ready to start Monitoring</h3>
+            <p class="mb-4">your account now and start monitoring your apps within minutes.</p>
+            <a href="{% url 'register' %}" class="btn-custom">Create a free account</a>
         </div>
-    </div>
+    </section>
 
-    <div class="footer">
-        App Performance Monitoring - APM
-    </div>
+    <!--Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 Application Performance Monitoring </p>
+        </div>
+    </footer>
 
-    <!-- Bootstrap JS  -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- For Charts.js -->
-    <script>
-        // Function for getting data from API and drawing charts
-        async function fetchDataAndRenderCharts() {
-            try {
-                const response = await fetch('/api/metrics/');
-                const data = await response.json();
-
-                // Extracting data from API
-                const labels = data.map(item => {
-                    // Displays the time briefly (hour:min)
-                    const date = new Date(item.timestamp);
-                    return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-                });
-
-                const responseTimes = data.map(item => item.response_time);
-                const requestCounts = data.map(item => item.request_count);
-                const errorCounts = data.map(item => item.error_count);
-                const appNames = data.map(item => item.application_name);
-
-                // Line Chart 
-                const ctxLine = document.getElementById('performanceChart').getContext('2d');
-                new Chart(ctxLine, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Response time (second)',
-                                data: responseTimes,
-                                borderColor: 'rgba(9, 132, 227, 1)',
-                                backgroundColor: 'rgba(9, 132, 227, 0.1)',
-                                tension: 0.3,
-                                yAxisID: 'y'
-                            },
-                            {
-                                label: 'Number of requests',
-                                data: requestCounts,
-                                borderColor: 'rgba(0, 184, 148, 1)',
-                                backgroundColor: 'rgba(0, 184, 148, 0.1)',
-                                tension: 0.3,
-                                yAxisID: 'y1'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    font: { size: 12 }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                type: 'linear',
-                                display: true,
-                                position: 'left',
-                                title: {
-                                    display: true,
-                                    text: 'Response time (second)'
-                                }
-                            },
-                            y1: {
-                                type: 'linear',
-                                display: true,
-                                position: 'right',
-                                grid: {
-                                    drawOnChartArea: false,
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Number of requests'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Calculate the distribution of errors per application
-                const errorDistribution = {};
-                data.forEach(item => {
-                    const app = item.application_name;
-                    if (errorDistribution[app]) {
-                        errorDistribution[app] += item.error_count;
-                    } else {
-                        errorDistribution[app] = item.error_count;
-                    }
-                });
-
-                const pieLabels = Object.keys(errorDistribution);
-                const pieData = Object.values(errorDistribution);
-                const colors = [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)',
-                    'rgba(153, 102, 255, 0.7)',
-                    'rgba(255, 159, 64, 0.7)'
-                ];
-
-                // --- Pie Chart ---
-                const ctxPie = document.getElementById('errorPieChart').getContext('2d');
-                new Chart(ctxPie, {
-                    type: 'pie',
-                    data: {
-                        labels: pieLabels,
-                        datasets: [{
-                            data: pieData,
-                            backgroundColor: colors.slice(0, pieLabels.length),
-                            borderColor: 'white',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    font: { size: 11 }
-                                }
-                            }
-                        }
-                    }
-                });
-
-            } catch (error) {
-                console.error('Data retrieval error:', error);
-                document.querySelector('.container .row').innerHTML = `
-                <div class="col-12 text-center text-danger">
-                    <p>Couldn't retrieve data from API Make sure the server is running</p>
-                </div>
-            `;
-            }
-        }
-
-        // when the page is loading excute the function.
-        window.onload = fetchDataAndRenderCharts;
-    </script>
 </body>
-
 </html>

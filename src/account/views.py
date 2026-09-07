@@ -8,6 +8,7 @@ from .serializers import RegisterSerializer, UserSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
@@ -20,10 +21,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['user'] = UserSerializer(self.user).data
         return data
 
+
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-    
+
 class ProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -42,6 +44,7 @@ class ProfileView(APIView):
         profile.save()
         
         return Response(UserSerializer(user).data)
+
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
