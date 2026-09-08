@@ -1,257 +1,180 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Applicationa Performance Monitoring System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        body {
-            background: #f0f2f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .navbar-custom {
-            background: #2d3436;
-            padding: 12px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .navbar-custom .navbar-brand {
-            color: white;
-            font-weight: 700;
-            font-size: 1.3rem;
-        }
-        .navbar-custom .navbar-brand i {
-            color: #0984e3;
-            margin-left: 8px;
-        }
-        .navbar-custom .nav-link {
-            color: rgba(255,255,255,0.8);
-            transition: 0.3s;
-            font-weight: 500;
-        }
-        .navbar-custom .nav-link:hover {
-            color: white;
-        }
-        .navbar-custom .btn-link {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            border: none;
-            background: none;
-            padding: 0.5rem 1rem;
-            font-weight: 500;
-            transition: 0.3s;
-        }
-        .navbar-custom .btn-link:hover {
-            color: white;
-        }
-        .hero {
-            background: linear-gradient(135deg, #2d3436, #0984e3);
-            color: white;
-            padding: 80px 0;
-            text-align: center;
-        }
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-        }
-        .hero p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        .btn-custom {
-            background: #0984e3;
-            color: white;
-            padding: 12px 40px;
-            border-radius: 30px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: 0.3s;
-            display: inline-block;
-        }
-        .btn-custom:hover {
-            background: #0873c7;
-            color: white;
-            transform: scale(1.05);
-        }
-        .features {
-            padding: 60px 0;
-            flex: 1;
-        }
-        .feature-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
-            height: 100%;
-        }
-        .feature-card:hover {
-            transform: translateY(-8px);
-        }
-        .feature-card i {
-            font-size: 3rem;
-            color: #0984e3;
-            margin-bottom: 20px;
-        }
-        .footer {
-            background: #2d3436;
-            color: rgba(255,255,255,0.6);
-            text-align: center;
-            padding: 20px 0;
-            margin-top: auto;
-        }
-        .footer p {
-            margin: 0;
-        }
-        .cta-section {
-            background: #dfe6e9;
-            padding: 60px 0;
-            text-align: center;
-        }
-        .cta-section h3 {
-            color: #2d3436;
-            font-weight: 700;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-chart-line"></i> APM Dashboard
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'home' %}">
-                            <i class="fas fa-home"></i> Main
-                        </a>
-                    </li>
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'dashboard' %}">
-                                <i class="fas fa-tachometer-alt"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">
-                                <i class="fas fa-user-circle"></i> {{ user.username }}
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-link">
-                                    <i class="fas fa-sign-out-alt"></i>Logout
-                                </button>
-                            </form>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt"></i>Login
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">
-                                <i class="fas fa-user-plus"></i>Register
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
+{% block title %}Home - APM{% endblock %}
 
-    
-    <section class="hero">
-        <div class="container">
-            <h1>Applications Performance Monitoring System</h1>
-            <p class="lead">Your application in real time easily and professionally</p>
-            <div class="mt-4">
-                <a href="{% url 'register' %}" class="btn-custom">
+{% block content %}
+<!-- Hero Section -->
+<section class="hero py-5 text-center" style="background: linear-gradient(135deg, #2d3436, #0984e3); color: white; border-radius: 16px; margin-top: 20px; padding: 80px 0;">
+    <div class="container">
+        <h1 class="display-3 fw-bold">Application Performance Monitoring</h1>
+        <p class="lead">Monitor your applications in real time easily and professionally</p>
+        <div class="mt-4">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg px-5 py-3 rounded-pill">
+                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                </a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 py-3 rounded-pill">
                     <i class="fas fa-rocket"></i> Start now for free
                 </a>
-            </div>
+            {% endif %}
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="features">
-        <div class="container">
-            <h2 class="text-center mb-5">System features</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <i class="fas fa-clock"></i>
-                        <h5>Instantly Monitoring</h5>
-                        <p>Follow your application performance in real time with auto updateing.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <i class="fas fa-chart-pie"></i>
-                        <h5>Advanced Analysis</h5>
-                        <p>Pie and Line charts help you in performance analysis.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <i class="fas fa-bell"></i>
-                        <h5>Instantly Alerts</h5>
-                        <p>Obtain notifications when normal performance limits are exceeded.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <i class="fas fa-shield-alt"></i>
-                        <h5>High security</h5>
-                        <p>An integrated authentication system that protects your data and ensures its privacy.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <i class="fas fa-code"></i>
-                        <h5>Easy integration</h5>
-                        <p>Simple to allow any application to easily send its data API interface.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <h5>Free and open source</h5>
-                        <p>All technologies used are open source and completely free.</p>
-                    </div>
+<!-- Features Section -->
+<section class="features py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">System Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <i class="fas fa-clock text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">Real-time Monitoring</h5>
+                    <p class="text-muted">Follow your application performance in real time with auto-updating.</p>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <i class="fas fa-chart-pie text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">Advanced Analytics</h5>
+                    <p class="text-muted">Pie and line charts help you analyze performance.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <i class="fas fa-bell text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">Instant Alerts</h5>
+                    <p class="text-muted">Get notifications when normal performance limits are exceeded.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <i class="fas fa-shield-alt text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">High Security</h5>
+                    <p class="text-muted">Integrated authentication system that protects your data.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <i class="fas fa-code text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">Easy Integration</h5>
+                    <p class="text-muted">Simple API interface for any application to send data.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
+                    <i class="fas fa-cloud-upload-alt text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">Free & Open Source</h5>
+                    <p class="text-muted">All technologies used are open source and completely free.</p>
+                </div>
+            </div>
         </div>
-    </section>
+    </div>
+</section>
 
-  
-    <section class="cta-section">
-        <div class="container">
-            <h3>Ready to start Monitoring</h3>
-            <p class="mb-4">your account now and start monitoring your apps within minutes.</p>
-            <a href="{% url 'register' %}" class="btn-custom">Create a free account</a>
+<!-- ============================================================
+     DOWNLOAD & GUIDE SECTION
+     Provides the single-file agent download, video tutorial,
+     and step-by-step instructions for both GUI and CLI modes.
+     ============================================================ -->
+<section class="download-section py-5" style="background: white; border-radius: 16px; margin: 30px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    <div class="container">
+        <h2 class="text-center mb-4"><i class="fas fa-download text-primary"></i> Download Monitoring Agent</h2>
+        
+        <div class="row g-4">
+            <!-- Left column: Download button and API Key instructions -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm p-4 h-100">
+                    <h5><i class="fas fa-file-exe text-success"></i> Agent File (v1.0)</h5>
+                    <p class="text-muted">One file for everyone. Double‑click for GUI, or use CLI for automation.</p>
+                    
+                    <!-- Download button -->
+                    <a href="/static/downloads/APM_Agent.exe" class="btn btn-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-download"></i> Download Agent (EXE)
+                    </a>
+                    
+                    <hr>
+                    <h6>How to get your API Key and Application ID?</h6>
+                    <ol class="small">
+                        <li>Log in to the <a href="{% url 'dashboard' %}">Dashboard</a>.</li>
+                        <li>Navigate to <strong>Applications</strong> and create a new app, or view existing.</li>
+                        <li>Copy the <code>API Key</code> and note the <code>Application ID</code> from the list.</li>
+                    </ol>
+                    
+                    <!-- Professional touch: show the current user's apps (optional) -->
+                    {% if user.is_authenticated %}
+                        <div class="mt-2 alert alert-info small">
+                            <i class="fas fa-info-circle"></i> Your current applications: 
+                            {% for app in user.applications.all %}
+                                <span class="badge bg-secondary">{{ app.name }} (ID: {{ app.id }})</span>
+                            {% empty %}
+                                No applications yet. Create one in the Dashboard.
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Right column: Video tutorial and step-by-step guide -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm p-4 h-100">
+                    <h5><i class="fas fa-video text-danger"></i> 📹 Video Tutorial</h5>
+                    <p class="text-muted">Watch the step-by-step video to set up the agent in 2 minutes.</p>
+                    
+                    <!-- Video placeholder (replace with your actual YouTube link) -->
+                    <div class="ratio ratio-16x9 mb-3 bg-light d-flex align-items-center justify-content-center" style="border-radius: 8px; min-height: 180px;">
+                        <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID" target="_blank" class="btn btn-outline-danger">
+                            <i class="fab fa-youtube fa-2x"></i> Watch on YouTube
+                        </a>
+                    </div>
+                    
+                    <hr>
+                    <h6>📖 Step‑by‑Step User Guide</h6>
+                    <ol class="small">
+                        <li><strong>Download</strong> the agent file from the button on the left.</li>
+                        <li>
+                            <strong>For non‑technical users (GUI):</strong> 
+                            Double‑click the file, enter your <code>API Key</code> and <code>Application ID</code>, 
+                            set the interval, then click <strong>Start Monitoring</strong>.
+                        </li>
+                        <li>
+                            <strong>For developers (CLI):</strong> 
+                            Open Terminal/CMD and run: 
+                            <code>APM_Agent.exe --key YOUR_API_KEY --app-id YOUR_APP_ID --interval 5</code>
+                        </li>
+                        <li>
+                            <strong>Verify:</strong> Open the <a href="{% url 'dashboard' %}">Dashboard</a> 
+                            to see your real‑time data updating automatically!
+                        </li>
+                    </ol>
+                    
+                    <!-- Professional touch: mention config file -->
+                    <p class="text-muted small mt-2">
+                        <i class="fas fa-save"></i> Your settings are saved automatically in <code>agent_config.ini</code> 
+                        next to the executable for convenience.
+                    </p>
+                </div>
+            </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!--Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2026 Application Performance Monitoring </p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<!-- Call to Action -->
+<section class="cta-section py-5 text-center" style="background: #dfe6e9; border-radius: 16px; margin-bottom: 30px;">
+    <div class="container">
+        <h3 class="fw-bold">Ready to start monitoring?</h3>
+        <p class="mb-4">Create your account now and start monitoring your apps within minutes.</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill">
+                <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+            </a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill">
+                <i class="fas fa-user-plus"></i> Create a free account
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

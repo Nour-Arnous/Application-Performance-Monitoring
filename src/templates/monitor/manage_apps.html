@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Applications - APM{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="fas fa-cubes text-primary"></i> My Applications & API Keys</h3>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    {% if applications %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <p class="text-muted">
+                    <i class="fas fa-info-circle"></i> 
+                    Use the <strong>Application ID</strong> and <strong>API Key</strong> below to configure your Agent.
+                    Click the copy button to copy the key.
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Application Name</th>
+                                <th>ID (app-id)</th>
+                                <th>API Key</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ app.name }}</strong></td>
+                                <td><span class="badge bg-secondary">{{ app.id }}</span></td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control font-monospace" 
+                                               id="key-{{ app.id }}" value="{{ app.api_key }}" readonly>
+                                        <button class="btn btn-outline-primary" 
+                                                onclick="copyToClipboard('key-{{ app.id }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">Active</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-exclamation-circle"></i> 
+            You don't have any applications yet. 
+            <a href="{% url 'dashboard' %}" class="alert-link">Go to Dashboard</a> to create one.
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Simple function to copy text to clipboard
+function copyToClipboard(elementId) {
+    var copyText = document.getElementById(elementId);
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+    navigator.clipboard.writeText(copyText.value).then(function() {
+        // Optional: change button text temporarily
+        var btn = copyText.nextElementSibling;
+        var originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check text-success"></i>';
+        setTimeout(function() {
+            btn.innerHTML = originalHtml;
+        }, 1500);
+    }).catch(function(err) {
+        alert('Failed to copy: ' + err);
+    });
+}
+</script>
+{% endblock %}

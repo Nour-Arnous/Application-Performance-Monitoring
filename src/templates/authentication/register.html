@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - APM{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2><i class="fas fa-user-plus text-success"></i> Create a new account</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Username</label>
+            <input type="text" name="username" id="id_username" class="form-control" 
+                   placeholder="Enter username" required>
+            {% if form.username.errors %}
+                <div class="text-danger small">{{ form.username.errors.0 }}</div>
+            {% endif %}
+            <small class="text-muted">Letters, digits and @/./+/-/_ only. Max 150 characters.</small>
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_email" class="form-label">Email</label>
+            <input type="email" name="email" id="id_email" class="form-control" 
+                   placeholder="example@domain.com" required>
+            {% if form.email.errors %}
+                <div class="text-danger small">{{ form.email.errors.0 }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_password1" class="form-label">Password</label>
+            <input type="password" name="password1" id="id_password1" class="form-control" 
+                   placeholder="Enter a strong password" required>
+            {% if form.password1.errors %}
+                <div class="text-danger small">{{ form.password1.errors.0 }}</div>
+            {% endif %}
+            <small class="text-muted">Must contain at least 8 characters and not be common.</small>
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_password2" class="form-label">Confirm password</label>
+            <input type="password" name="password2" id="id_password2" class="form-control" 
+                   placeholder="Re-enter your password" required>
+            {% if form.password2.errors %}
+                <div class="text-danger small">{{ form.password2.errors.0 }}</div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> Create account
+        </button>
+        
+        <div class="auth-link">
+            Already have an account? <a href="{% url 'login' %}">Login</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

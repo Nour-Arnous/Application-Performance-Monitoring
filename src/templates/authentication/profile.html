@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - APM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="profile-card">
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3 class="text-center">{{ user.username }}</h3>
+            <p class="text-center text-muted">User registered in Application Performance Monitoring</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-user"></i> Username</span><br>
+                        <span class="info-value">{{ user.username }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-envelope"></i> Email</span><br>
+                        <span class="info-value">{{ user.email }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-calendar-alt"></i> Date of joining</span><br>
+                        <span class="info-value">{{ user.date_joined|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-check-circle"></i> Status</span><br>
+                        <span class="info-value">
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-cubes"></i> Number of Applications</span><br>
+                        <span class="info-value">{{ applications_count }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-bell"></i> Unread Alerts</span><br>
+                        <span class="info-value">{{ alerts_unread }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-right"></i> Back to dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
