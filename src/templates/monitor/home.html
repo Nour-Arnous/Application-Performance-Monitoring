@@ -1,73 +1,82 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home - APM{% endblock %}
+{% block title %}Home - APM System{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero py-5 text-center" style="background: linear-gradient(135deg, #2d3436, #0984e3); color: white; border-radius: 16px; margin-top: 20px; padding: 80px 0;">
+<section class="hero py-5 text-center"
+    style="background: linear-gradient(135deg, #2d3436, #0984e3); color: white; border-radius: 16px; margin-top: 20px; padding: 70px 0;"
+    dir="ltr">
     <div class="container">
-        <h1 class="display-3 fw-bold">Application Performance Monitoring</h1>
-        <p class="lead">Monitor your applications in real time easily and professionally</p>
+        <h1 class="display-4 fw-bold mb-3">Application Performance Monitoring</h1>
+        <p class="lead opacity-90">Monitor your infrastructure and application metrics in real-time with zero friction.
+        </p>
         <div class="mt-4">
             {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg px-5 py-3 rounded-pill">
-                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
-                </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg px-5 py-3 rounded-pill fw-semibold shadow-sm">
+                <i class="fas fa-tachometer-alt me-2 text-primary"></i> Go to Dashboard
+            </a>
             {% else %}
-                <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 py-3 rounded-pill">
-                    <i class="fas fa-rocket"></i> Start now for free
-                </a>
+            <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 py-3 rounded-pill fw-semibold shadow-sm">
+                <i class="fas fa-rocket me-2 text-primary"></i> Start Now for Free
+            </a>
             {% endif %}
         </div>
     </div>
 </section>
 
 <!-- Features Section -->
-<section class="features py-5">
+<section class="features py-5" dir="ltr">
     <div class="container">
-        <h2 class="text-center mb-5">System Features</h2>
+        <h2 class="text-center mb-5 fw-bold text-dark">System Key Features</h2>
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <i class="fas fa-clock text-primary" style="font-size: 3rem;"></i>
-                    <h5 class="mt-3">Real-time Monitoring</h5>
-                    <p class="text-muted">Follow your application performance in real time with auto-updating.</p>
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                    <i class="fas fa-clock text-primary mb-3" style="font-size: 2.8rem;"></i>
+                    <h5 class="fw-bold">Real-time Monitoring</h5>
+                    <p class="text-muted small">Track application performance instantly using automated WebSocket metric
+                        feeds.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <i class="fas fa-chart-pie text-primary" style="font-size: 3rem;"></i>
-                    <h5 class="mt-3">Advanced Analytics</h5>
-                    <p class="text-muted">Pie and line charts help you analyze performance.</p>
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                    <i class="fas fa-chart-pie text-primary mb-3" style="font-size: 2.8rem;"></i>
+                    <h5 class="fw-bold">Advanced Analytics</h5>
+                    <p class="text-muted small">Interactive pie and line charts offering full insight into system
+                        throughput and latency.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <i class="fas fa-bell text-primary" style="font-size: 3rem;"></i>
-                    <h5 class="mt-3">Instant Alerts</h5>
-                    <p class="text-muted">Get notifications when normal performance limits are exceeded.</p>
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                    <i class="fas fa-bell text-primary mb-3" style="font-size: 2.8rem;"></i>
+                    <h5 class="fw-bold">Instant Threshold Alerts</h5>
+                    <p class="text-muted small">Get immediate visual warnings whenever response times or error rates
+                        spike.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <i class="fas fa-shield-alt text-primary" style="font-size: 3rem;"></i>
-                    <h5 class="mt-3">High Security</h5>
-                    <p class="text-muted">Integrated authentication system that protects your data.</p>
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                    <i class="fas fa-shield-alt text-primary mb-3" style="font-size: 2.8rem;"></i>
+                    <h5 class="fw-bold">Secure Authentication</h5>
+                    <p class="text-muted small">Protected multi-tenant platform with individual API Keys for each
+                        application.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <i class="fas fa-code text-primary" style="font-size: 3rem;"></i>
-                    <h5 class="mt-3">Easy Integration</h5>
-                    <p class="text-muted">Simple API interface for any application to send data.</p>
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                    <i class="fas fa-code text-primary mb-3" style="font-size: 2.8rem;"></i>
+                    <h5 class="fw-bold">Seamless Agent Integration</h5>
+                    <p class="text-muted small">Plug-and-play desktop & CLI background monitoring agent for all server
+                        environments.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100">
-                    <i class="fas fa-cloud-upload-alt text-primary" style="font-size: 3rem;"></i>
-                    <h5 class="mt-3">Free & Open Source</h5>
-                    <p class="text-muted">All technologies used are open source and completely free.</p>
+                <div class="feature-card text-center p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                    <i class="fas fa-cloud-upload-alt text-primary mb-3" style="font-size: 2.8rem;"></i>
+                    <h5 class="fw-bold">Lightweight & Open</h5>
+                    <p class="text-muted small">Built with Python and Django, optimized for fast deployment and minimal
+                        resource usage.</p>
                 </div>
             </div>
         </div>
@@ -75,86 +84,179 @@
 </section>
 
 <!-- ============================================================
-     DOWNLOAD & GUIDE SECTION
-     Provides the single-file agent download, video tutorial,
-     and step-by-step instructions for both GUI and CLI modes.
+     ABOUT & USAGE GUIDE SECTION 
      ============================================================ -->
-<section class="download-section py-5" style="background: white; border-radius: 16px; margin: 30px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+<section id="about" class="download-section py-5 my-4 bg-white rounded-4 shadow-sm" dir="ltr"
+    style="scroll-margin-top: 80px;">
     <div class="container">
-        <h2 class="text-center mb-4"><i class="fas fa-download text-primary"></i> Download Monitoring Agent</h2>
-        
+
+        <!-- Section Title & Intro -->
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-dark mb-2">
+                <i class="fas fa-info-circle text-primary me-2"></i>About & Usage Guide
+            </h2>
+            <p class="text-muted max-w-700 mx-auto">
+                Everything you need to know about setting up and running the APM Monitoring Agent in under 2 minutes.
+            </p>
+        </div>
+
         <div class="row g-4">
-            <!-- Left column: Download button and API Key instructions -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm p-4 h-100">
-                    <h5><i class="fas fa-file-exe text-success"></i> Agent File (v1.0)</h5>
-                    <p class="text-muted">One file for everyone. Double‑click for GUI, or use CLI for automation.</p>
-                    
-                    <!-- Download button -->
-                    <a href="/static/downloads/APM_Agent.exe" class="btn btn-primary btn-lg w-100 mb-3">
-                        <i class="fas fa-download"></i> Download Agent (EXE)
+            <!-- Left Side: Agent Download & Application Info -->
+            <div class="col-lg-5">
+                <div class="card border-0 bg-light rounded-4 p-4 h-100 shadow-sm">
+                    <h5 class="fw-bold text-dark mb-3">
+                        <i class="fas fa-download text-primary me-2"></i>Download Monitoring Agent
+                    </h5>
+                    <p class="text-muted small mb-4">
+                        Download the single standalone executable. Works out of the box with an interactive graphical
+                        interface or background CLI mode.
+                    </p>
+
+                    <!-- Agent Executable Download Button -->
+                    <a href="{% static 'downloads/APM_Agent.exe' %}"
+                        class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-4">
+                        <i class="fas fa-file-download me-2"></i> Download Agent (APM_Agent.exe)
                     </a>
-                    
-                    <hr>
-                    <h6>How to get your API Key and Application ID?</h6>
-                    <ol class="small">
-                        <li>Log in to the <a href="{% url 'dashboard' %}">Dashboard</a>.</li>
-                        <li>Navigate to <strong>Applications</strong> and create a new app, or view existing.</li>
-                        <li>Copy the <code>API Key</code> and note the <code>Application ID</code> from the list.</li>
+
+                    <hr class="my-3 text-secondary opacity-25">
+
+                    <!-- How to get Keys Instructions -->
+                    <h6 class="fw-bold text-dark mb-2">
+                        <i class="fas fa-key text-warning me-2"></i>Getting Your Credentials:
+                    </h6>
+                    <ol class="small text-muted ps-3 mb-4">
+                        <li class="mb-1">Log in to your account and navigate to <strong>My Apps</strong>.</li>
+                        <li class="mb-1">Click <strong>Add New Application</strong> to generate a unique key.</li>
+                        <li class="mb-1">Copy the <code>API Key</code> and note your assigned
+                            <code>Application ID</code>.</li>
                     </ol>
-                    
-                    <!-- Professional touch: show the current user's apps (optional) -->
+
+                    <!-- Logged-in User Application Status List -->
                     {% if user.is_authenticated %}
-                        <div class="mt-2 alert alert-info small">
-                            <i class="fas fa-info-circle"></i> Your current applications: 
-                            {% for app in user.applications.all %}
-                                <span class="badge bg-secondary">{{ app.name }} (ID: {{ app.id }})</span>
+                    <div class="mt-auto p-3 bg-white rounded-3 border border-info border-opacity-25">
+                        <span class="fw-semibold text-dark small d-block mb-2">
+                            <i class="fas fa-cubes text-info me-1"></i> Your Registered Applications:
+                        </span>
+
+                        <!-- Direct access using user.applications.all defined in Application model -->
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for app in applications %}
+                            <span
+                                class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1 small">
+                                {{ app.name }} (ID: {{ app.id }})
+                            </span>
                             {% empty %}
-                                No applications yet. Create one in the Dashboard.
+                            <p class="small text-muted mb-0">
+                                No applications registered yet. <a href="{% url 'manage_apps' %}"
+                                    class="fw-semibold text-primary">Create one here</a>.
+                            </p>
                             {% endfor %}
                         </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
-            
-            <!-- Right column: Video tutorial and step-by-step guide -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm p-4 h-100">
-                    <h5><i class="fas fa-video text-danger"></i> 📹 Video Tutorial</h5>
-                    <p class="text-muted">Watch the step-by-step video to set up the agent in 2 minutes.</p>
-                    
-                    <!-- Video placeholder (replace with your actual YouTube link) -->
-                    <div class="ratio ratio-16x9 mb-3 bg-light d-flex align-items-center justify-content-center" style="border-radius: 8px; min-height: 180px;">
-                        <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID" target="_blank" class="btn btn-outline-danger">
-                            <i class="fab fa-youtube fa-2x"></i> Watch on YouTube
-                        </a>
-                    </div>
-                    
-                    <hr>
-                    <h6>📖 Step‑by‑Step User Guide</h6>
-                    <ol class="small">
-                        <li><strong>Download</strong> the agent file from the button on the left.</li>
-                        <li>
-                            <strong>For non‑technical users (GUI):</strong> 
-                            Double‑click the file, enter your <code>API Key</code> and <code>Application ID</code>, 
-                            set the interval, then click <strong>Start Monitoring</strong>.
-                        </li>
-                        <li>
-                            <strong>For developers (CLI):</strong> 
-                            Open Terminal/CMD and run: 
-                            <code>APM_Agent.exe --key YOUR_API_KEY --app-id YOUR_APP_ID --interval 5</code>
-                        </li>
-                        <li>
-                            <strong>Verify:</strong> Open the <a href="{% url 'dashboard' %}">Dashboard</a> 
-                            to see your real‑time data updating automatically!
-                        </li>
-                    </ol>
-                    
-                    <!-- Professional touch: mention config file -->
-                    <p class="text-muted small mt-2">
-                        <i class="fas fa-save"></i> Your settings are saved automatically in <code>agent_config.ini</code> 
-                        next to the executable for convenience.
+
+            <!-- Right Side: Step-by-Step Visual Guide with Screenshots Cards -->
+            <div class="col-lg-7">
+                <div class="card border-0 bg-light rounded-4 p-4 h-100 shadow-sm">
+                    <h5 class="fw-bold text-dark mb-3">
+                        <i class="fas fa-layer-group text-success me-2"></i>Step-by-Step Setup Screenshots
+                    </h5>
+                    <p class="text-muted small mb-4">
+                        Follow these simple visual steps to connect your agent to the APM platform. <span class="text-primary fw-semibold">(Double-click any image to zoom in)</span>
                     </p>
+
+                    <!-- Screenshots Cards Grid -->
+                    <div class="row g-3">
+
+                        <!-- Step 1: Download & Open -->
+                        <div class="col-md-6">
+                            <div class="bg-white p-3 rounded-3 shadow-sm border h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2">Step 1</span>
+                                    <h6 class="fw-bold mb-0 small">Launch the Agent</h6>
+                                </div>
+                                <div class="text-center my-2 bg-light rounded p-2 border border-dashed">
+                                    <!-- Added zoomable-img class and title instruction -->
+                                    <img src="{% static 'images/guide_step1.png' %}" alt="Step 1 Screenshot"
+                                        class="img-fluid rounded zoomable-img"
+                                        title="Double-click to view larger"
+                                        onerror="this.onerror=null; this.src='https://placehold.co/300x160/e9ecef/495057?text=Step+1:+Launch+GUI';">
+                                </div>
+                                <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
+                                    Double-click <code>APM_Agent.exe</code> to open the user graphical interface.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Enter Key & App ID -->
+                        <div class="col-md-6">
+                            <div class="bg-white p-3 rounded-3 shadow-sm border h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-primary me-2">Step 2</span>
+                                    <h6 class="fw-bold mb-0 small">Enter Credentials</h6>
+                                </div>
+                                <div class="text-center my-2 bg-light rounded p-2 border border-dashed">
+                                    <!-- Added zoomable-img class and title instruction -->
+                                    <img src="{% static 'images/guide_step2.png' %}" alt="Step 2 Screenshot"
+                                        class="img-fluid rounded zoomable-img"
+                                        title="Double-click to view larger"
+                                        onerror="this.onerror=null; this.src='https://placehold.co/300x160/e9ecef/495057?text=Step+2:+Paste+API+Key';">
+                                </div>
+                                <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
+                                    Paste your <code>API Key</code> and <code>App ID</code> obtained from your profile.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Start Monitoring -->
+                        <div class="col-md-6">
+                            <div class="bg-white p-3 rounded-3 shadow-sm border h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-success me-2">Step 3</span>
+                                    <h6 class="fw-bold mb-0 small">Start Monitoring</h6>
+                                </div>
+                                <div class="text-center my-2 bg-light rounded p-2 border border-dashed">
+                                    <!-- Added zoomable-img class and title instruction -->
+                                    <img src="{% static 'images/guide_step3.png' %}" alt="Step 3 Screenshot"
+                                        class="img-fluid rounded zoomable-img"
+                                        title="Double-click to view larger"
+                                        onerror="this.onerror=null; this.src='https://placehold.co/300x160/e9ecef/495057?text=Step+3:+Start+Agent';">
+                                </div>
+                                <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
+                                    Click <strong>Start Monitoring</strong> to begin sending metrics to server.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: CLI Mode Optional -->
+                        <div class="col-md-6">
+                            <div class="bg-white p-3 rounded-3 shadow-sm border h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-secondary me-2">CLI Mode</span>
+                                    <h6 class="fw-bold mb-0 small">Automated / Developer Mode</h6>
+                                </div>
+                                <div class="p-2 bg-dark text-success font-monospace rounded small my-2"
+                                    style="font-size: 0.75rem; word-break: break-all;">
+                                    APM_Agent.exe --key YOUR_KEY --app-id 1 --interval 5
+                                </div>
+                                <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
+                                    Developers can run the agent via Command Prompt / Terminal or background service.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div> <!-- End Row -->
+
+                    <!-- Config File Note -->
+                    <div class="mt-3 p-2 bg-white rounded border d-flex align-items-center">
+                        <i class="fas fa-save text-muted me-2 ms-1"></i>
+                        <span class="text-muted small">
+                            Configuration is automatically saved in <code>agent_config.ini</code> next to the EXE.
+                        </span>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -162,19 +264,56 @@
 </section>
 
 <!-- Call to Action -->
-<section class="cta-section py-5 text-center" style="background: #dfe6e9; border-radius: 16px; margin-bottom: 30px;">
+<section class="cta-section py-5 text-center bg-light rounded-4 my-4" dir="ltr">
     <div class="container">
-        <h3 class="fw-bold">Ready to start monitoring?</h3>
-        <p class="mb-4">Create your account now and start monitoring your apps within minutes.</p>
+        <h3 class="fw-bold text-dark mb-2">Ready to start monitoring?</h3>
+        <p class="text-muted mb-4">Create your account now and monitor your applications in real-time.</p>
         {% if user.is_authenticated %}
-            <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill">
-                <i class="fas fa-tachometer-alt"></i> Go to Dashboard
-            </a>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-semibold shadow-sm">
+            <i class="fas fa-tachometer-alt me-2"></i> Go to Dashboard
+        </a>
         {% else %}
-            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill">
-                <i class="fas fa-user-plus"></i> Create a free account
-            </a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-semibold shadow-sm">
+            <i class="fas fa-user-plus me-2"></i> Create a Free Account
+        </a>
         {% endif %}
     </div>
 </section>
+
+<!-- ============================================================
+     IMAGE ZOOM MODAL COMPONENT (For Double-Click Feature)
+     ============================================================ -->
+<div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body text-center position-relative p-0">
+                <!-- Close Button -->
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 bg-dark p-2 rounded-circle shadow" data-bs-dismiss="modal" aria-label="Close"></button>
+                <!-- Enlarged Dynamic Image Container -->
+                <img src="" id="zoomedImageElement" class="img-fluid rounded-4 shadow-lg border border-white border-3 bg-white" alt="Enlarged Guide View">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Handling Image Double-Click Zoom -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Select all images with the zoomable-img class
+        const zoomableImages = document.querySelectorAll(".zoomable-img");
+        const modalImage = document.getElementById("zoomedImageElement");
+        const imageModal = new bootstrap.Modal(document.getElementById("imageZoomModal"));
+
+        zoomableImages.forEach(img => {
+            // Change cursor style to indicate interactivity
+            img.style.cursor = "zoom-in";
+            
+            // Listen for double-click event on the image
+            img.addEventListener("dblclick", function () {
+                modalImage.src = this.src; // Set the modal image source to the clicked image
+                imageModal.show();         // Trigger Bootstrap Modal display
+            });
+        });
+    });
+</script>
 {% endblock %}

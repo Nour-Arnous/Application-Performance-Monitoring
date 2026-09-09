@@ -4,57 +4,87 @@
 {% block title %}Register - APM{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <h2><i class="fas fa-user-plus text-success"></i> Create a new account</h2>
-    
-    <form method="post">
-        {% csrf_token %}
+<!-- Centered Authentication Container Layout -->
+<div class="row justify-content-center align-items-center py-4">
+    <div class="col-md-7 col-lg-6 col-xl-5">
         
-        <div class="mb-3">
-            <label for="id_username" class="form-label">Username</label>
-            <input type="text" name="username" id="id_username" class="form-control" 
-                   placeholder="Enter username" required>
-            {% if form.username.errors %}
-                <div class="text-danger small">{{ form.username.errors.0 }}</div>
-            {% endif %}
-            <small class="text-muted">Letters, digits and @/./+/-/_ only. Max 150 characters.</small>
+        <!-- Main Card Container for Registration Form -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            
+            <!-- Card Header with Primary Gradient Theme -->
+            <div class="bg-primary bg-gradient p-4 text-white text-center">
+                <div class="mb-2">
+                    <i class="fas fa-user-plus fa-2x"></i>
+                </div>
+                <h3 class="fw-bold mb-0">Create a New Account</h3>
+                <p class="text-white-50 small mb-0">Join Application Performance Monitoring</p>
+            </div>
+
+            <!-- Card Body Content -->
+            <div class="card-body p-4 bg-white">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Username Field Group -->
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label fw-semibold text-secondary">Username</label>
+                        <input type="text" name="username" id="id_username" class="form-control rounded-3 py-2" 
+                               placeholder="Enter username" required>
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                        <small class="text-muted">Letters, digits and @/./+/-/_ only. Max 150 characters.</small>
+                    </div>
+                    
+                    <!-- Email Field Group -->
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label fw-semibold text-secondary">Email</label>
+                        <input type="email" name="email" id="id_email" class="form-control rounded-3 py-2" 
+                               placeholder="example@domain.com" required>
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Password 1 Field Group -->
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label fw-semibold text-secondary">Password</label>
+                        <input type="password" name="password1" id="id_password1" class="form-control rounded-3 py-2" 
+                               placeholder="Enter a strong password" required>
+                        {% if form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
+                        {% endif %}
+                        <small class="text-muted">Must contain at least 8 characters and not be common.</small>
+                    </div>
+                    
+                    <!-- Password 2 (Confirmation) Field Group -->
+                    <div class="mb-4">
+                        <label for="id_password2" class="form-label fw-semibold text-secondary">Confirm password</label>
+                        <input type="password" name="password2" id="id_password2" class="form-control rounded-3 py-2" 
+                               placeholder="Re-enter your password" required>
+                        {% if form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary py-2 fw-bold shadow-sm rounded-pill">
+                            <i class="fas fa-user-plus me-2"></i> Create account
+                        </button>
+                    </div>
+                    
+                    <!-- Login Redirect Link -->
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="text-muted small mb-0">
+                            Already have an account? <a href="{% url 'login' %}" class="text-primary fw-semibold text-decoration-none">Login</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+            
         </div>
-        
-        <div class="mb-3">
-            <label for="id_email" class="form-label">Email</label>
-            <input type="email" name="email" id="id_email" class="form-control" 
-                   placeholder="example@domain.com" required>
-            {% if form.email.errors %}
-                <div class="text-danger small">{{ form.email.errors.0 }}</div>
-            {% endif %}
-        </div>
-        
-        <div class="mb-3">
-            <label for="id_password1" class="form-label">Password</label>
-            <input type="password" name="password1" id="id_password1" class="form-control" 
-                   placeholder="Enter a strong password" required>
-            {% if form.password1.errors %}
-                <div class="text-danger small">{{ form.password1.errors.0 }}</div>
-            {% endif %}
-            <small class="text-muted">Must contain at least 8 characters and not be common.</small>
-        </div>
-        
-        <div class="mb-3">
-            <label for="id_password2" class="form-label">Confirm password</label>
-            <input type="password" name="password2" id="id_password2" class="form-control" 
-                   placeholder="Re-enter your password" required>
-            {% if form.password2.errors %}
-                <div class="text-danger small">{{ form.password2.errors.0 }}</div>
-            {% endif %}
-        </div>
-        
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-user-plus"></i> Create account
-        </button>
-        
-        <div class="auth-link">
-            Already have an account? <a href="{% url 'login' %}">Login</a>
-        </div>
-    </form>
+
+    </div>
 </div>
 {% endblock %}

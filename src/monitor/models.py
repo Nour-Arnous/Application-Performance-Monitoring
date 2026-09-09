@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import secrets
+from django.utils import timezone
 
 class Application(models.Model):
     name = models.CharField(max_length=100)
@@ -29,20 +30,23 @@ class Metric(models.Model):
     def __str__(self):
         return f"{self.application.name} - {self.response_time}s"
 
+
 class Alert(models.Model):
+    # Severity Choice Definitions
     SEVERITY_CHOICES = [
-        ('info', 'Information'),
-        ('warning', 'Warning'),
-        ('danger', 'Danger'),
-        ('success', 'Success'),
+        ('CRITICAL', 'Critical'),
+        ('WARNING', 'Warning'),
+        ('INFO', 'Info'),
     ]
-    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='alerts')
+
+    application = models.ForeignKey('Application', on_delete=models.CASCADE, related_name='alerts')
     message = models.TextField()
-    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, default='info')
-    created_at = models.DateTimeField(auto_now_add=True)
+    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, default='WARNING')
     is_read = models.BooleanField(default=False)
-    metric_value = models.FloatField(null=True, blank=True)
-    threshold = models.FloatField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.get_severity_display()} - {self.application.name}"
+        return f"[{self.severity}] {self.application.name} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"

@@ -1,900 +1,192 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+{% extends "base.html" %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - APM</title>
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* Same styles as your existing dashboard - keep them unchanged */
-        body {
-            background: #f4f6f9;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            direction: rtl;
-        }
+{% block title %}Dashboard - APM{% endblock %}
 
-        .navbar-custom {
-            background: #2d3436;
-            padding: 12px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
+{% block content %}
+<!-- Header Section with Title and Global Update Controls -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold text-dark mb-0">
+        <i class="fas fa-chart-pie text-primary"></i> Dashboard
+    </h4>
+    <div>
+        <!-- Last Update Timestamp Display -->
+        <span id="lastUpdate" class="text-muted small me-3">
+            <i class="fas fa-clock"></i> Last Update: --
+        </span>
+        <!-- Manual Refresh Button -->
+        <button class="refresh-btn" onclick="fetchDataAndRenderCharts()">
+            <i class="fas fa-sync-alt"></i> Update
+        </button>
+    </div>
+</div>
 
-        .navbar-custom .navbar-brand {
-            color: white;
-            font-weight: 700;
-            font-size: 1.3rem;
-        }
+<!-- Time Range Filter & Period Information Bar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Time Filter Button Group -->
+    <div class="btn-group" role="group" aria-label="Time Range Filter">
+        <button type="button" class="btn btn-outline-primary btn-sm time-filter-btn" data-hours="1">Last Hour</button>
+        <button type="button" class="btn btn-primary btn-sm time-filter-btn active" data-hours="24">Last 24 Hours</button>
+        <button type="button" class="btn btn-outline-primary btn-sm time-filter-btn" data-hours="168">Last Week</button>
+    </div>
+    <span class="text-muted small">Showing data for selected period</span>
+</div>
 
-        .navbar-custom .navbar-brand i {
-            color: #0984e3;
-            margin-left: 8px;
-        }
+<!-- Loading Overlay Indicator -->
+<div id="loadingIndicator" class="loading-overlay">
+    <i class="fas fa-spinner fa-spin fa-2x"></i>
+    <p class="mt-2">Loading data...</p>
+</div>
 
-        .navbar-custom .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            transition: 0.3s;
-            font-weight: 500;
-        }
-
-        .navbar-custom .nav-link:hover {
-            color: white;
-        }
-
-        .navbar-custom .btn-link {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            border: none;
-            background: none;
-            padding: 0.5rem 1rem;
-            font-weight: 500;
-            transition: 0.3s;
-        }
-
-        .navbar-custom .btn-link:hover {
-            color: white;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-            transition: transform 0.2s, box-shadow 0.2s;
-            height: 100%;
-            border-right: 5px solid #0984e3;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card .stat-icon {
-            font-size: 2rem;
-            color: #0984e3;
-            margin-bottom: 10px;
-        }
-
-        .stat-card .stat-label {
-            color: #636e72;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .stat-card .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #2d3436;
-            margin-top: 5px;
-        }
-
-        .stat-card .stat-sub {
-            font-size: 0.8rem;
-            color: #b2bec3;
-            margin-top: 5px;
-        }
-
-        .stat-card.border-danger {
-            border-right-color: #e17055;
-        }
-
-        .stat-card.border-success {
-            border-right-color: #00b894;
-        }
-
-        .stat-card.border-warning {
-            border-right-color: #fdcb6e;
-        }
-
-        .chart-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-            margin-bottom: 25px;
-            transition: 0.3s;
-        }
-
-        .chart-card:hover {
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .chart-card .card-title {
-            font-weight: 700;
-            color: #2d3436;
-            margin-bottom: 15px;
-        }
-
-        .chart-card .card-title i {
-            color: #0984e3;
-            margin-left: 8px;
-        }
-
-        .alert-card {
-            background: white;
-            border-radius: 16px;
-            padding: 15px 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-            margin-bottom: 20px;
-            border-right: 5px solid #fdcb6e;
-        }
-
-        .alert-card.danger {
-            border-right-color: #e17055;
-        }
-
-        .alert-card.success {
-            border-right-color: #00b894;
-        }
-
-        .alert-card .alert-time {
-            font-size: 0.8rem;
-            color: #b2bec3;
-        }
-
-        .refresh-btn {
-            background: #0984e3;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .refresh-btn:hover {
-            background: #0873c7;
-            transform: scale(1.05);
-        }
-
-        .refresh-btn i {
-            margin-left: 8px;
-        }
-
-        .loading-overlay {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: #0984e3;
-        }
-
-        .footer {
-            text-align: center;
-            color: #b2bec3;
-            padding: 20px;
-            font-size: 0.9rem;
-            margin-top: 30px;
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-chart-line"></i>APM Dashboard
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">
-                            <i class="fas fa-home"></i>Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'dashboard' %}">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile' %}">
-                            <i class="fas fa-user-circle"></i> {{ user.username }}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-link">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container mt-4">
-
-        <!-- Header with update button -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-bold text-dark">
-                <i class="fas fa-chart-pie text-primary"></i> Dashboard
-            </h4>
-            <div>
-                <span id="lastUpdate" class="text-muted small me-3">
-                    <i class="fas fa-clock"></i> Last Update: --
-                </span>
-                <button class="refresh-btn" onclick="fetchDataAndRenderCharts()">
-                    <i class="fas fa-sync-alt"></i> Update
-                </button>
-            </div>
-        </div>
-
-        <!-- Time Range Filter -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="btn-group" role="group" aria-label="Time Range Filter">
-                <button type="button" class="btn btn-outline-primary btn-sm time-filter-btn" data-hours="1">Last
-                    Hour</button>
-                <button type="button" class="btn btn-primary btn-sm time-filter-btn active" data-hours="24">Last 24
-                    Hours</button>
-                <button type="button" class="btn btn-outline-primary btn-sm time-filter-btn" data-hours="168">Last
-                    Week</button>
-            </div>
-            <span class="text-muted small">Showing data for selected period</span>
-        </div>
-
-        <!-- Loading indicator -->
-        <div id="loadingIndicator" class="loading-overlay">
-            <i class="fas fa-spinner fa-spin fa-2x"></i>
-            <p class="mt-2">Loading data...</p>
-        </div>
-
-        <!-- Statistical cards -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-cubes"></i></div>
-                    <div class="stat-label">Number of Applications</div>
-                    <div class="stat-value" id="statApps">0</div>
-                    <div class="stat-sub">Monitored Applications</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card border-warning">
-                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                    <div class="stat-label">Average Response Time</div>
-                    <div class="stat-value" id="statAvgResponse">0.00</div>
-                    <div class="stat-sub">Seconds</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card border-success">
-                    <div class="stat-icon"><i class="fas fa-exchange-alt"></i></div>
-                    <div class="stat-label">Total Requests</div>
-                    <div class="stat-value" id="statTotalRequests">0</div>
-                    <div class="stat-sub">Requests</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card border-danger">
-                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                    <div class="stat-label">Total Errors</div>
-                    <div class="stat-value" id="statTotalErrors">0</div>
-                    <div class="stat-sub">Errors</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alerts container -->
-        <div id="alertsContainer"></div>
-
-        <!-- Charts -->
-        <div class="row">
-            <!-- Line chart for all metrics -->
-            <div class="col-12">
-                <div class="chart-card">
-                    <div class="card-title">
-                        <i class="fas fa-chart-line"></i> Metrics Evolution Over Time
-                    </div>
-                    <canvas id="mainLineChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Forecast Chart -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="chart-card">
-                    <div class="card-title">
-                        <i class="fas fa-brain text-primary"></i> AI Forecast (Next 60 minutes)
-                    </div>
-                    <canvas id="forecastChart" width="400" height="200"></canvas>
-                    <p class="text-muted small mt-2">
-                        <i class="fas fa-info-circle"></i>
-                        Predicted response time based on historical data using Prophet.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Pie chart: error distribution -->
-            <div class="col-md-6">
-                <div class="chart-card">
-                    <div class="card-title">
-                        <i class="fas fa-chart-pie"></i> Error Distribution by Application
-                    </div>
-                    <canvas id="errorPieChart" width="300" height="250"></canvas>
-                </div>
-            </div>
-            <!-- Pie chart: request distribution -->
-            <div class="col-md-6">
-                <div class="chart-card">
-                    <div class="card-title">
-                        <i class="fas fa-chart-pie"></i> Request Distribution by Application
-                    </div>
-                    <canvas id="requestsPieChart" width="300" height="250"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin button -->
-        <div class="text-center mt-3 mb-4">
-            <a href="/admin" class="btn btn-outline-secondary">
-                <i class="fas fa-cog"></i> Admin Panel
-            </a>
+<!-- Top-Level Statistical Summary Cards Grid -->
+<div class="row g-4 mb-4">
+    <!-- Card 1: Monitored Applications -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-cubes"></i></div>
+            <div class="stat-label">Number of Applications</div>
+            <div class="stat-value" id="statApps">0</div>
+            <div class="stat-sub">Monitored Applications</div>
         </div>
     </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        © 2026 Application Performance Monitoring
+    <!-- Card 2: Average Response Time -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card border-warning">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-label">Average Response Time</div>
+            <div class="stat-value" id="statAvgResponse">0.00</div>
+            <div class="stat-sub">Seconds</div>
+        </div>
     </div>
+    <!-- Card 3: Total Requests Count -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card border-success">
+            <div class="stat-icon"><i class="fas fa-exchange-alt"></i></div>
+            <div class="stat-label">Total Requests</div>
+            <div class="stat-value" id="statTotalRequests">0</div>
+            <div class="stat-sub">Requests</div>
+        </div>
+    </div>
+    <!-- Card 4: Total System Errors -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card border-danger">
+            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="stat-label">Total Errors</div>
+            <div class="stat-value" id="statTotalErrors">0</div>
+            <div class="stat-sub">Errors</div>
+        </div>
+    </div>
+</div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Dynamic System Alerts Container -->
+<div id="alertsContainer" class="mb-4"></div>
 
-    <script>
-        // Chart instances
-        let mainChart = null;
-        let errorPieChart = null;
-        let requestsPieChart = null;
-        let updateInterval = null;
-        let ws = null;
+<!-- Main Time-Series Charts Section -->
+<div class="row">
+    <!-- Line Chart for Core Metrics Evolution -->
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="card-title">
+                <i class="fas fa-chart-line text-primary"></i> Metrics Evolution Over Time
+            </div>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="mainLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
-        // ============================================================
-        // WebSocket Connection for Real-time Updates
-        // ============================================================
-        function connectWebSocket() {
-            // Get the access token from sessionStorage (set during login)
-            const token = sessionStorage.getItem('access_token') || '';
+<!-- Prophet AI Forecast Analytics Chart -->
+<div class="row mt-2">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="card-title">
+                <i class="fas fa-brain text-primary"></i> AI Forecast (Next 60 minutes)
+            </div>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="forecastChart"></canvas>
+            </div>
+            <p class="text-muted small mt-2 mb-0">
+                <i class="fas fa-info-circle"></i>
+                Predicted response time based on historical data using Prophet.
+            </p>
+        </div>
+    </div>
+</div>
 
-            // Create WebSocket connection with token in query string
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            const wsUrl = `${wsProtocol}${window.location.host}/ws/metrics/?token=${token}`;
+<!-- Distribution Charts Section (Errors & Requests per Application) -->
+<div class="row">
+    <!-- Pie Chart: Error Distribution -->
+    <div class="col-md-6">
+        <div class="chart-card">
+            <div class="card-title">
+                <i class="fas fa-chart-pie text-primary"></i> Error Distribution by Application
+            </div>
+            <div style="position: relative; height: 250px; width: 100%;">
+                <canvas id="errorPieChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- Pie Chart: Request Distribution -->
+    <div class="col-md-6">
+        <div class="chart-card">
+            <div class="card-title">
+                <i class="fas fa-chart-pie text-primary"></i> Request Distribution by Application
+            </div>
+            <div style="position: relative; height: 250px; width: 100%;">
+                <canvas id="requestsPieChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
-            ws = new WebSocket(wsUrl);
-
-            ws.onopen = function () {
-                console.log('🔌 WebSocket connected successfully');
-            };
-
-            ws.onmessage = function (event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    console.log('📡 New metric received via WebSocket:', data);
-
-                    // Update charts with new data point
-                    updateChartsWithNewMetric(data);
-
-                    // Update statistics
-                    updateStatisticsWithNewMetric(data);
-
-                } catch (error) {
-                    console.error('Error processing WebSocket message:', error);
-                }
-            };
-
-            ws.onclose = function () {
-                console.log('🔌 WebSocket disconnected. Reconnecting in 3 seconds...');
-                setTimeout(connectWebSocket, 3000);
-            };
-
-            ws.onerror = function (error) {
-                console.error('WebSocket error:', error);
-            };
-        }
-
-        // ============================================================
-        // Update charts with new metric (for WebSocket)
-        // ============================================================
-        function updateChartsWithNewMetric(data) {
-            if (!mainChart) return;
-
-            // Add new data point
-            const time = new Date(data.timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-
-            // Keep only last 30 points
-            if (mainChart.data.labels.length >= 30) {
-                mainChart.data.labels.shift();
-                mainChart.data.datasets.forEach(dataset => dataset.data.shift());
-            }
-
-            mainChart.data.labels.push(time);
-            mainChart.data.datasets[0].data.push(data.response_time);
-            mainChart.data.datasets[1].data.push(data.request_count);
-            mainChart.data.datasets[2].data.push(data.error_count);
-
-            mainChart.update();
-        }
-
-        // ============================================================
-        // Update statistics with new metric (for WebSocket)
-        // ============================================================
-        function updateStatisticsWithNewMetric(data) {
-            // Update applications count if new app
-            const appsElement = document.getElementById('statApps');
-            const currentApps = parseInt(appsElement.textContent) || 0;
-            // We can't easily increment without knowing if it's a new app,
-            // so we'll just rely on the full refresh
-            // For simplicity, we'll refresh all stats periodically
-        }
-
-
-        // Main function: Fetch data based on the selected time range
-        async function fetchDataAndRenderCharts() {
-            const loading = document.getElementById('loadingIndicator');
-            loading.style.display = 'block';
-
-            try {
-                // Append the 'hours' query parameter to the API URL
-                // Example: /api/metrics/?hours=24  or  /api/metrics/?hours=1
-                const response = await fetch(`/api/metrics/?hours=${currentTimeRange}`);
-                const data = await response.json();
-
-                // Update statistical cards
-                updateStatistics(data);
-
-                // Update alerts
-                updateAlerts(data);
-
-                // Update charts
-                renderLineChart(data);
-                renderPieCharts(data);
-
-                // Update last update time
-                const now = new Date();
-                document.getElementById('lastUpdate').innerHTML =
-                    `<i class="fas fa-clock"></i> Last Update: ${now.toLocaleTimeString('ar-EG')}`;
-
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                document.getElementById('lastUpdate').innerHTML =
-                    `<i class="fas fa-exclamation-circle text-danger"></i> Update failed`;
-            } finally {
-                loading.style.display = 'none';
-            }
-        }
-
-        // Update statistical cards
-        function updateStatistics(data) {
-            if (!data || data.length === 0) {
-                document.getElementById('statApps').textContent = '0';
-                document.getElementById('statAvgResponse').textContent = '0.00';
-                document.getElementById('statTotalRequests').textContent = '0';
-                document.getElementById('statTotalErrors').textContent = '0';
-                return;
-            }
-
-            // Unique applications
-            const apps = new Set(data.map(item => item.application_name));
-            document.getElementById('statApps').textContent = apps.size;
-
-            // Average response time
-            const totalResponse = data.reduce((sum, item) => sum + item.response_time, 0);
-            const avg = totalResponse / data.length;
-            document.getElementById('statAvgResponse').textContent = avg.toFixed(2);
-
-            // Total requests
-            const totalRequests = data.reduce((sum, item) => sum + item.request_count, 0);
-            document.getElementById('statTotalRequests').textContent = totalRequests.toLocaleString();
-
-            // Total errors
-            const totalErrors = data.reduce((sum, item) => sum + item.error_count, 0);
-            document.getElementById('statTotalErrors').textContent = totalErrors.toLocaleString();
-        }
-
-        // Update alerts from server data
-        function updateAlerts(data) {
-            const container = document.getElementById('alertsContainer');
-
-            // Generate alerts based on data
-            const alerts = [];
-
-            data.forEach(item => {
-                if (item.response_time > 3.0) {
-                    alerts.push({
-                        app: item.application_name,
-                        msg: `High response time: ${item.response_time.toFixed(2)}s`,
-                        type: 'danger',
-                        time: item.timestamp
-                    });
-                }
-                if (item.error_count > 5) {
-                    alerts.push({
-                        app: item.application_name,
-                        msg: `High error count: ${item.error_count} errors`,
-                        type: 'danger',
-                        time: item.timestamp
-                    });
-                }
-            });
-
-            if (alerts.length === 0) {
-                container.innerHTML = `
-                    <div class="alert-card success">
-                        <i class="fas fa-check-circle text-success"></i>
-                        All applications are running normally
-                    </div>
-                `;
-                return;
-            }
-
-            // Show only last 3 alerts
-            const recent = alerts.slice(-3);
-            container.innerHTML = recent.map(alert => `
-                <div class="alert-card ${alert.type}">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span><strong>${alert.app}</strong> - ${alert.msg}</span>
-                        <span class="alert-time">${new Date(alert.time).toLocaleTimeString('ar-EG')}</span>
-                    </div>
+<!-- Restricted Admin Section: Monitored Applications Management Table -->
+{% if user.is_staff or user.is_superuser %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="card-title mb-0">
+                    <i class="fas fa-cubes text-primary"></i> Monitored Applications & Owners
                 </div>
-            `).join('');
-        }
+                <span class="badge bg-primary px-3 py-2" id="tableAppsCount">0 Applications</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Application Name</th>
+                            <th>Owner</th>
+                            <th>Created Date</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">
+                                <i class="fas fa-spinner fa-spin me-2"></i> Loading applications...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-        // ============================================================
-        // Render line chart
-        // ============================================================
-        function renderLineChart(data) {
-            const ctx = document.getElementById('mainLineChart').getContext('2d');
+<!-- External Link to Django Administration Panel -->
+<div class="text-center mt-3 mb-4">
+    <a href="/admin/" class="btn btn-outline-secondary" target="_blank">
+        <i class="fas fa-cog me-1"></i> Open Django Admin Panel
+    </a>
+</div>
+{% endif %}
+{% endblock %}
 
-            const sorted = data.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            const labels = sorted.map(item => {
-                const d = new Date(item.timestamp);
-                return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            });
-
-            const responseData = sorted.map(item => item.response_time);
-            const requestData = sorted.map(item => item.request_count);
-            const errorData = sorted.map(item => item.error_count);
-
-            if (mainChart) {
-                mainChart.destroy();
-            }
-
-            mainChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Response Time (seconds)',
-                            data: responseData,
-                            borderColor: 'rgba(9, 132, 227, 1)',
-                            backgroundColor: 'rgba(9, 132, 227, 0.1)',
-                            tension: 0.3,
-                            yAxisID: 'y',
-                            pointRadius: 2,
-                        },
-                        {
-                            label: 'Number of Requests',
-                            data: requestData,
-                            borderColor: 'rgba(0, 184, 148, 1)',
-                            backgroundColor: 'rgba(0, 184, 148, 0.1)',
-                            tension: 0.3,
-                            yAxisID: 'y1',
-                            pointRadius: 2,
-                        },
-                        {
-                            label: 'Number of Errors',
-                            data: errorData,
-                            borderColor: 'rgba(225, 112, 85, 1)',
-                            backgroundColor: 'rgba(225, 112, 85, 0.1)',
-                            tension: 0.3,
-                            yAxisID: 'y1',
-                            pointRadius: 2,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                font: { size: 12 },
-                                boxWidth: 15
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return context.dataset.label + ': ' + context.parsed.y;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: {
-                                display: true,
-                                text: 'Response Time (seconds)',
-                                font: { size: 11 }
-                            },
-                            grid: { color: 'rgba(0,0,0,0.05)' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'Requests / Errors',
-                                font: { size: 11 }
-                            },
-                            grid: { drawOnChartArea: false },
-                            min: 0,
-                        }
-                    }
-                }
-            });
-        }
-
-        // ============================================================
-        // Render pie charts
-        // ============================================================
-        function renderPieCharts(data) {
-            const colors = [
-                'rgba(255, 99, 132, 0.7)',
-                'rgba(54, 162, 235, 0.7)',
-                'rgba(255, 206, 86, 0.7)',
-                'rgba(75, 192, 192, 0.7)',
-                'rgba(153, 102, 255, 0.7)',
-                'rgba(255, 159, 64, 0.7)'
-            ];
-
-            // Error distribution
-            const errorDist = {};
-            data.forEach(item => {
-                const app = item.application_name;
-                errorDist[app] = (errorDist[app] || 0) + item.error_count;
-            });
-
-            const errorLabels = Object.keys(errorDist);
-            const errorData = Object.values(errorDist);
-
-            const ctxError = document.getElementById('errorPieChart').getContext('2d');
-            if (errorPieChart) errorPieChart.destroy();
-            errorPieChart = new Chart(ctxError, {
-                type: 'pie',
-                data: {
-                    labels: errorLabels.length ? errorLabels : ['No errors'],
-                    datasets: [{
-                        data: errorLabels.length ? errorData : [1],
-                        backgroundColor: errorLabels.length ? colors.slice(0, errorLabels.length) : ['#dfe6e9'],
-                        borderColor: 'white',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { size: 11 } }
-                        }
-                    }
-                }
-            });
-
-            // Request distribution
-            const reqDist = {};
-            data.forEach(item => {
-                const app = item.application_name;
-                reqDist[app] = (reqDist[app] || 0) + item.request_count;
-            });
-
-            const reqLabels = Object.keys(reqDist);
-            const reqData = Object.values(reqDist);
-
-            const ctxReq = document.getElementById('requestsPieChart').getContext('2d');
-            if (requestsPieChart) requestsPieChart.destroy();
-            requestsPieChart = new Chart(ctxReq, {
-                type: 'pie',
-                data: {
-                    labels: reqLabels.length ? reqLabels : ['No requests'],
-                    datasets: [{
-                        data: reqLabels.length ? reqData : [1],
-                        backgroundColor: reqLabels.length ? colors.slice(0, reqLabels.length) : ['#dfe6e9'],
-                        borderColor: 'white',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { size: 11 } }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ============================================================
-        // Fetch and display forecast data (AI Prophet)
-        // ============================================================
-        async function loadForecast() {
-            try {
-                const appId = 1; // Get from context or API
-                const response = await fetch(`/api/applications/${appId}/forecast/`);
-                const data = await response.json();
-
-                if (data.forecast) {
-                    renderForecastChart(data.forecast);
-                } else {
-                    console.warn('No forecast data available.');
-                }
-            } catch (error) {
-                console.error('Error loading forecast:', error);
-            }
-        }
-
-        function renderForecastChart(forecastData) {
-            const ctx = document.getElementById('forecastChart').getContext('2d');
-            const labels = forecastData.map(item =>
-                new Date(item.ds).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
-            );
-            const yhat = forecastData.map(item => item.yhat);
-            const lower = forecastData.map(item => item.yhat_lower);
-            const upper = forecastData.map(item => item.yhat_upper);
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Predicted Response Time',
-                            data: yhat,
-                            borderColor: 'rgba(225, 112, 85, 1)',
-                            backgroundColor: 'rgba(225, 112, 85, 0.1)',
-                            borderDash: [5, 5],
-                            tension: 0.3,
-                            pointRadius: 3,
-                        },
-                        {
-                            label: 'Confidence Interval (Upper)',
-                            data: upper,
-                            borderColor: 'rgba(225, 112, 85, 0.2)',
-                            backgroundColor: 'rgba(225, 112, 85, 0.05)',
-                            borderWidth: 0,
-                            fill: '+1',
-                        },
-                        {
-                            label: 'Confidence Interval (Lower)',
-                            data: lower,
-                            borderColor: 'rgba(225, 112, 85, 0.2)',
-                            backgroundColor: 'rgba(225, 112, 85, 0.05)',
-                            borderWidth: 0,
-                            fill: false,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            labels: { font: { size: 11 } }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Response Time (seconds)',
-                                font: { size: 11 }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ================================================================
-        // TIME FILTER SECTION: Variables and Logic for time-based filtering
-        // ================================================================
-
-        // Store the currently selected time range in hours. Default is 24 hours (Last 24 Hours).
-        let currentTimeRange = 24;
-
-        /**
-         * Sets up click event listeners for the time filter buttons.
-         * Updates the active button style and triggers data refresh.
-         */
-        function setupTimeFilters() {
-            const buttons = document.querySelectorAll('.time-filter-btn');
-
-            buttons.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    // Remove 'active' and 'btn-primary' classes from all buttons
-                    buttons.forEach(b => {
-                        b.classList.remove('btn-primary', 'active');
-                        b.classList.add('btn-outline-primary');
-                    });
-
-                    // Activate the clicked button
-                    this.classList.remove('btn-outline-primary');
-                    this.classList.add('btn-primary', 'active');
-
-                    // Update the global time range variable with the selected hours
-                    currentTimeRange = parseInt(this.dataset.hours);
-
-                    // Fetch new data with the selected time range
-                    fetchDataAndRenderCharts();
-                });
-            });
-        }
-
-
-        // ============================================================
-        // Auto refresh every 10 seconds
-        // ============================================================
-        function startAutoRefresh() {
-            if (updateInterval) {
-                clearInterval(updateInterval);
-            }
-            updateInterval = setInterval(fetchDataAndRenderCharts, 10000);
-        }
-
-        // ============================================================
-        // Initialize on page load
-        // ============================================================
-        window.onload = function () {
-            setupTimeFilters(); 
-            fetchDataAndRenderCharts();
-            startAutoRefresh();
-            connectWebSocket();
-            loadForecast();
-        };
-    </script>
-</body>
-
-</html>
+{% block extra_js %}
+<!-- External Chart.js and Dashboard Script Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

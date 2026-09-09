@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark mb-0">System Alerts & Incidents</h3>
+        <span class="badge bg-secondary">Total: {{ page_obj.paginator.count }}</span>
+    </div>
+
+    <!-- Filter Bar Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="GET" action="{% url 'alerts_list' %}" class="row g-3 align-items-end">
+                
+                <!-- Severity Filter -->
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-muted">Severity Level</label>
+                    <select name="severity" class="form-select">
+                        <option value="">All Severities</option>
+                        <option value="CRITICAL" {% if selected_severity == 'CRITICAL' %}selected{% endif %}>Critical</option>
+                        <option value="WARNING" {% if selected_severity == 'WARNING' %}selected{% endif %}>Warning</option>
+                        <option value="INFO" {% if selected_severity == 'INFO' %}selected{% endif %}>Info</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-muted">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="unread" {% if selected_status == 'unread' %}selected{% endif %}>Unread / Active</option>
+                        <option value="read" {% if selected_status == 'read' %}selected{% endif %}>Read / Resolved</option>
+                    </select>
+                </div>
+
+                <!-- Application Filter -->
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-muted">Application</label>
+                    <select name="app_id" class="form-select">
+                        <option value="">All Applications</option>
+                        {% for app in applications %}
+                            <option value="{{ app.id }}" {% if selected_app == app.id|stringformat:"i" %}selected{% endif %}>
+                                {{ app.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filter & Reset Buttons -->
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-funnel-fill"></i> Filter
+                    </button>
+                    <a href="{% url 'alerts_list' %}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Alerts Table Card -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="ps-4">Severity</th>
+                            <th scope="col">Application</th>
+                            <th scope="col">Message</th>
+                            <th scope="col">Date & Time</th>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alert in page_obj %}
+                        <tr class="{% if not alert.is_read %}table-active-row{% endif %}">
+                            
+                            <!-- Severity Badge -->
+                            <td class="ps-4">
+                                {% if alert.severity == 'CRITICAL' %}
+                                    <span class="badge bg-danger text-uppercase">Critical</span>
+                                {% elif alert.severity == 'WARNING' %}
+                                    <span class="badge bg-warning text-dark text-uppercase">Warning</span>
+                                {% else %}
+                                    <span class="badge bg-info text-dark text-uppercase">Info</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Application Name -->
+                            <td class="fw-bold">{{ alert.application.name }}</td>
+
+                            <!-- Message Content -->
+                            <td class="text-secondary">{{ alert.message }}</td>
+
+                            <!-- Creation Timestamp -->
+                            <td class="small text-muted">{{ alert.created_at|date:"Y-m-d H:i:s" }}</td>
+
+                            <!-- Read Status Badge -->
+                            <td>
+                                {% if alert.is_read %}
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill">Resolved</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill">Active</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Action Toggle Button -->
+                            <td class="text-end pe-4">
+                                <a href="{% url 'toggle_alert_status' alert.id %}" 
+                                   class="btn btn-sm {% if alert.is_read %}btn-outline-secondary{% else %}btn-outline-success{% endif %}">
+                                   {% if alert.is_read %}Mark Unread{% else %}Mark Resolved{% endif %}
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-check-circle fs-2 d-block mb-2 text-success"></i>
+                                No alerts found matching the selected criteria.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination Controls Footer -->
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-white border-0 py-3">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&severity={{ selected_severity }}&status={{ selected_status }}&app_id={{ selected_app }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&severity={{ selected_severity }}&status={{ selected_status }}&app_id={{ selected_app }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
