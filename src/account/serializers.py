@@ -19,11 +19,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password is not matching."})
+            raise serializers.ValidationError({"password": "Password is not matching!"})
         return attrs
 
     def create(self, validated_data):
-    
         username = validated_data.get('username')
         email = validated_data.get('email')
         password = validated_data.get('password')
@@ -42,15 +41,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         if company:
             profile.company = company
         profile.save()
-        
         return user
-
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('phone', 'company')
-
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)

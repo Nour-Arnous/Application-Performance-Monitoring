@@ -14,17 +14,14 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
 
-
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):      
         data = super().validate(attrs)
         data['user'] = UserSerializer(self.user).data
         return data
 
-
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-
 
 class ProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -36,15 +33,12 @@ class ProfileView(APIView):
     def put(self, request):
         user = request.user
         user.email = request.data.get('email', user.email)
-        user.save()
-        
+        user.save()  
         profile = user.profile
         profile.phone = request.data.get('phone', profile.phone)
         profile.company = request.data.get('company', profile.company)
         profile.save()
-        
         return Response(UserSerializer(user).data)
-
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]

@@ -1,3 +1,5 @@
+# Views for the monitor application.
+# Includes HTML views (session-based authentication) and API views (JWT-based authentication).
 import uuid
 from datetime import timedelta
 
@@ -24,16 +26,16 @@ from .forecast import generate_forecast_for_app, get_cached_forecast
 
 from django.core.paginator import Paginator
 
-
-# ============================================================
-# HTML Views (Session-based authentication)
-# ============================================================
+# HTML VIEWS (Session-based authentication)
+# These views render HTML pages and use Django's session-based
+# authentication (login_required decorator).
 
 def home(request):
-    """
-    Home page view.
-    Admins see all applications; regular users see only their own.
-    """
+    # Home page view.
+    # Admins see all applications; regular users see only their own.
+    # I display the list of applications on the home page so users can quickly
+    # see which apps they have. Admins see everything, which is useful for
+    # monitoring the whole system at a glance.
     user_apps = []
     if request.user.is_authenticated:
         if request.user.is_staff or request.user.is_superuser:
@@ -45,10 +47,11 @@ def home(request):
 
 @login_required
 def dashboard(request):
-    """
-    Dashboard view showing core application performance metrics and charts.
-    Alerts logic removed to streamline the dashboard layout.
-    """
+    # Dashboard view showing core application performance metrics and charts.
+    # Alerts logic removed to streamline the dashboard layout.
+    # I decided to keep the dashboard focused on metrics and charts, and moved
+    # alerts to a separate page. This makes the dashboard cleaner and faster
+    # to load, especially when there are many metrics.
     if request.user.is_staff or request.user.is_superuser:
         user_apps = Application.objects.all()
         metrics = Metric.objects.all().order_by('-timestamp')[:30]
@@ -64,7 +67,10 @@ def dashboard(request):
     return render(request, 'monitor/dashboard.html', context)
 
 def register_view(request):
-    """User registration view."""
+    # User registration view.
+    # I'm using Django's built-in UserCreationForm here because it handles
+    # password validation and user creation automatically. This saves time
+    # and reduces the risk of security issues.
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -81,7 +87,10 @@ def register_view(request):
 
 
 def login_view(request):
-    """User login view."""
+    # User login view.
+    # I'm using Django's authenticate() function to verify credentials.
+    # If authentication succeeds, I log the user in and redirect them to the dashboard.
+    # If it fails, I show an error message and keep them on the login page.
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -97,7 +106,7 @@ def login_view(request):
 
 
 def logout_view(request):
-    """User logout view."""
+    #User logout view.
     logout(request)
     messages.info(request, 'You have been logged out.')
     return redirect('home')
@@ -105,7 +114,10 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    """User profile view with summary statistics."""
+    # User profile view with summary statistics.
+    # I show the number of applications the user owns and how many unread alerts
+    # they have. For admins, I show global counts instead of user-specific ones.
+    # This gives admins a quick overview of the entire system.
     if request.user.is_staff or request.user.is_superuser:
         applications_count = Application.objects.all().count()
         alerts_unread = Alert.objects.filter(is_read=False).count()
@@ -125,7 +137,11 @@ def profile_view(request):
 
 @login_required
 def manage_apps(request):
-    """Manage and create applications with auto-generated API Keys."""
+    # Manage and create applications with auto-generated API Keys.
+    # I created this page so users can create new applications and view their
+    # API keys in one place. When a user creates an application, I generate
+    # a random UUID as the API key. This is much more secure than letting
+    # users choose their own keys.
     if request.method == 'POST':
         app_name = request.POST.get('name')
         description = request.POST.get('description', '')
@@ -156,10 +172,12 @@ def manage_apps(request):
 
 @login_required
 def alerts_list_view(request):
-    """
-    Display a paginated list of alerts with filtering capabilities
-    by severity, read status, and application.
-    """
+    # Display a paginated list of alerts with filtering capabilities
+    # by severity, read status, and application.
+    # I added pagination and filtering to make it easier for users to find
+    # relevant alerts. Without these features, the alerts list would become
+    # overwhelming as the system grows.
+
     # Fetch base queryset according to user roles
     if request.user.is_staff or request.user.is_superuser:
         alerts = Alert.objects.select_related('application').all()
@@ -200,9 +218,10 @@ def alerts_list_view(request):
 
 @login_required
 def toggle_alert_status(request, alert_id):
-    """
-    Toggle the read/unread status of an alert.
-    """
+    # Toggle the read/unread status of an alert.
+    # This is a simple helper function that lets users mark alerts as read
+    # or unread with a single click. I redirect back to the previous page
+    # so the user doesn't lose their place in the list.
     alert = get_object_or_404(Alert, id=alert_id)
     alert.is_read = not alert.is_read
     alert.save()
@@ -210,26 +229,37 @@ def toggle_alert_status(request, alert_id):
     return redirect(request.META.get('HTTP_REFERER', 'alerts_list'))
 
 
-# ============================================================
-# API Views (JWT & API Key based authentication)
-# ============================================================
+# API VIEWS (JWT & API Key based authentication)
+# These views are used by developers and external agents to interact
+# with the system programmatically.
 
 class ApplicationViewSet(viewsets.ModelViewSet):
-    """API ViewSet for managing Applications."""
+    # API ViewSet for managing Applications.
+    # I used a ModelViewSet here because it automatically provides all the
+    # standard CRUD operations (Create, Read, Update, Delete) for applications.
+    # I customized the queryset so that admins see everything and regular users
+    # only see their own applications.
     serializer_class = ApplicationSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
+        # Admins can see all applications for monitoring purposes
         if self.request.user.is_staff or self.request.user.is_superuser:
             return Application.objects.all()
+        # Regular users can only see and modify their own applications
         return Application.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
+        # I automatically set the owner to the currently logged-in user
+        # This prevents users from creating applications owned by someone else
         serializer.save(owner=self.request.user)
 
     @action(detail=True, methods=['get'])
     def forecast(self, request, pk=None):
-        """Generate or retrieve cached forecast for an application."""
+        # Generate or retrieve cached forecast for an application.
+        # I check the cache first to avoid regenerating the forecast if it's
+        # already available. If not, I generate it and return the result.
+        # This makes the endpoint faster and reduces server load.
         app = self.get_object()
         
         forecast = get_cached_forecast(app.id)
@@ -237,7 +267,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             forecast = generate_forecast_for_app(app.id)
             if not forecast:
                 return Response(
-                    {"error": "Not enough data to generate forecast."},
+                    {"error": "Not enough data to generate forecast!"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
         
@@ -249,22 +279,35 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
 
 class MetricViewSet(viewsets.ModelViewSet):
-    """API ViewSet for managing metrics via JWT or API Key."""
+    # API ViewSet for managing metrics via JWT or API Key.
+    # This is one of the most important parts of the system. It accepts metrics
+    # from both authenticated users (via JWT) and external agents (via API Key).
+    # I also added time filtering so users can retrieve metrics from specific time
+    # ranges (e.g., last 24 hours).
+
     serializer_class = MetricSerializer
     permission_classes = [IsAgentOrAuthenticated]
 
     def get_queryset(self):
+        # Determine the queryset based on user role and authentication method.
+        # Admins see all metrics, regular users see their own app metrics,
+        # and agents see only their app's metrics.
+    
+        # Case 1: Authenticated user (JWT)
         if self.request.user and self.request.user.is_authenticated:
             if self.request.user.is_staff or self.request.user.is_superuser:
                 queryset = Metric.objects.all()
             else:
                 user_apps = Application.objects.filter(owner=self.request.user)
                 queryset = Metric.objects.filter(application__in=user_apps)
+        # Case 2: Agent (API Key)
         elif hasattr(self.request, '_agent_app'):
             queryset = Metric.objects.filter(application=self.request._agent_app)
+        # Case 3: No valid authentication
         else:
             return Metric.objects.none()
-
+        
+        # Apply time filter if 'hours' parameter is provided
         hours_param = self.request.query_params.get('hours', None)
         if hours_param is not None:
             try:
@@ -272,12 +315,19 @@ class MetricViewSet(viewsets.ModelViewSet):
                 if hours > 0:
                     cutoff_time = timezone.now() - timedelta(hours=hours)
                     queryset = queryset.filter(timestamp__gte=cutoff_time)
+                # If hours == 0, no filter is applied (show all data)
             except ValueError:
+                # Ignore invalid parameter values
                 pass
 
+        # Return newest metrics first
         return queryset.order_by('-timestamp')
 
     def perform_create(self, serializer):
+        # Create a new metric.
+        # I validate that the application exists and belongs to the user or agent.
+        # If everything is valid, I save the metric and broadcast it via WebSocket
+        # so all connected dashboards update in real-time.
         app_id = self.request.data.get('application')
         if not app_id:
             raise ValidationError({"application": "This field is required."})
@@ -295,6 +345,8 @@ class MetricViewSet(viewsets.ModelViewSet):
         metric = serializer.save(application=app)
         
         # Broadcast metric update via WebSocket channels
+        # I wrapped this in a try/except so the API doesn't fail if WebSocket
+        # is not available (e.g., when running without Daphne)
         try:
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
@@ -305,11 +357,14 @@ class MetricViewSet(viewsets.ModelViewSet):
                 }
             )
         except Exception:
+            # WebSocket might not be configured, but the API should still work
             pass
 
 
 class AlertViewSet(viewsets.ModelViewSet):
-    """API ViewSet for managing system alerts."""
+    # API ViewSet for managing system alerts.
+    # Admins can see all alerts, while regular users can only see alerts
+    # related to their own applications. This ensures data privacy.
     serializer_class = AlertSerializer
     permission_classes = [IsAuthenticated]
 
@@ -319,6 +374,8 @@ class AlertViewSet(viewsets.ModelViewSet):
         return Alert.objects.filter(application__owner=self.request.user)
 
     def perform_create(self, serializer):
+        # Create a new alert.
+        # I validate that the application exists and belongs to the user.
         app_id = self.request.data.get('application')
         if not app_id:
             raise ValidationError({"application": "This field is required."})

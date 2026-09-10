@@ -11,10 +11,10 @@ class IsOwnerOrReadOnly(BasePermission):
         return obj.owner == request.user
 
 class IsAgentOrAuthenticated(BasePermission):
-    """
-    Custom permission: Allow access either via JWT (authenticated user)
-    or via API Key (agent).
-    """
+    # This custom permission allows access in two ways: either through a JWT token
+    # (for logged‑in users) or through an API Key (for the agent). I implemented
+    # this so that both developers using the API and external agents can send
+    # data without needing a user account.
     def has_permission(self, request, view):
         # Check if user is authenticated via JWT
         if request.user and request.user.is_authenticated:

@@ -1,8 +1,5 @@
-"""
-Celery tasks for APM monitoring.
-These tasks run periodically to perform background operations.
-"""
-
+# Celery tasks for APM monitoring.
+# These tasks run periodically to perform background operations.
 from celery import shared_task
 from django.utils import timezone
 from datetime import timedelta
@@ -11,14 +8,13 @@ from .models import Metric, Application, Alert
 import logging
 
 logger = logging.getLogger(__name__)
-
-
 @shared_task
 def calculate_averages():
-    """
-    Calculate average response time for each application over the last 24 hours.
-    This task runs every 5 minutes.
-    """
+    # I wrote this task to automatically calculate the average response time
+    # for each active application over the last 24 hours. The result is logged
+    # so I can monitor performance trends over time. I chose 24 hours because
+    # it gives a good balance between recent data and meaningful averages.
+    # Running it every 5 minutes ensures the data stays fresh without overloading the database
     apps = Application.objects.filter(is_active=True)
     for app in apps:
         metrics = Metric.objects.filter(
@@ -33,10 +29,12 @@ def calculate_averages():
 
 @shared_task
 def check_thresholds():
-    """
-    Check all active thresholds and create alerts if metrics exceed limits.
-    This task runs every minute.
-    """
+    # This is my alerting system. It runs every minute and checks the latest
+    # metric for each active application. If the response time exceeds 3 seconds
+    # or the error count goes above 5, it automatically creates an alert.
+    # I chose these thresholds because they are common indicators of performance
+    # issues in web applications. The alerts are stored in the database so they
+    # can be displayed on the dashboard and reviewed by the user.
     apps = Application.objects.filter(is_active=True)
     alerts_created = 0
 
@@ -73,10 +71,10 @@ def check_thresholds():
 
 @shared_task
 def clean_old_data():
-    """
-    Delete metrics older than 30 days to save database space.
-    This task runs daily at midnight.
-    """
+    # I added this task to prevent the database from growing too large over time.
+    # Metrics older than 30 days are no longer needed for real-time monitoring
+    # or forecasting, so I delete them automatically every night. This keeps
+    # the database size manageable and query performance fast.
     cutoff = timezone.now() - timedelta(days=30)
     old_metrics = Metric.objects.filter(timestamp__lt=cutoff)
     count = old_metrics.count()
@@ -87,10 +85,11 @@ def clean_old_data():
 
 @shared_task
 def generate_forecast_task():
-    """
-    Generate AI forecast for all active applications.
-    This task runs every hour.
-    """
+    # This task generates a Prophet forecast for every active application
+    # once every hour. I decided to run it hourly so that the forecast data
+    # stays up-to-date without putting too much load on the server (Prophet
+    # can be computationally expensive). I imported forecast locally to avoid
+    # circular dependency issues between tasks.py and forecast.py.
     from .forecast import generate_forecast_for_app  # Local import to avoid circular dependency
     
     apps = Application.objects.filter(is_active=True)
@@ -100,6 +99,7 @@ def generate_forecast_task():
         if result:
             results.append(f"App {app.id}: success")
         else:
+            # This usually means there isn't enough historical data yet
             results.append(f"App {app.id}: failed (not enough data)")
     
     logger.info(f"Forecast generated for {len(apps)} apps.")

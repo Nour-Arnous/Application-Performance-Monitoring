@@ -1,6 +1,4 @@
-"""
-Forecasting module using Prophet for response time prediction.
-"""
+# Forecasting module using Prophet for response time prediction.
 import logging
 import pandas as pd
 from prophet import Prophet
@@ -8,14 +6,11 @@ from django.core.cache import cache
 from .models import Metric
 
 logger = logging.getLogger(__name__)
-
-
 def generate_forecast_for_app(app_id, periods=12, freq='5min'):
-    """
-    Generate Prophet response time forecast for a specific application.
-    Clips negative forecast values to 0 since response times cannot be negative.
-    Returns forecast data as a list of dicts with ISO formatted dates.
-    """
+    # This function generates a Prophet forecast for response time for a specific app.
+    # Since response time can never be negative, I clip any predicted negative
+    # values to 0. The result is returned as a list of dictionaries with
+    # ISO‑formatted dates so it's easy to use in the frontend.
     try:
         # Fetch the latest 100 historical data points
         metrics_qs = Metric.objects.filter(
@@ -82,6 +77,6 @@ def generate_forecast_for_app(app_id, periods=12, freq='5min'):
 
 
 def get_cached_forecast(app_id):
-    """Retrieve cached forecast data from Django cache."""
+    # Retrieve cached forecast data from Django cache
     cache_key = f'forecast_{app_id}'
     return cache.get(cache_key)
