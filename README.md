@@ -1,13 +1,15 @@
+```markdown
 # Application Performance Monitoring (APM) Dashboard
 
 APM Dashboard is a complete, real-time monitoring system for web applications.
-  It collects performance metrics (response time, request count, error count) from external applications via a lightweight Agent,
-  visualizes them in an interactive dashboard,
-  and uses AI (Prophet) to forecast future response times.
+ It collects performance metrics (response time, request count, error count) from external applications via a lightweight Agent,
+ visualizes them in an interactive dashboard, and uses AI (Prophet) to forecast future response times.
 
+---
 
 ## Project File Hierarchy
 
+```text
 APM/                                    # Root project folder
 │
 ├── src/                                 # All source code
@@ -72,6 +74,9 @@ APM/                                    # Root project folder
     ├── add_metrics_test_postman.png
     └── logout_test_postman.png
 
+```
+
+---
 
 ## Step‑by‑Step Installation & Setup
 
@@ -82,22 +87,30 @@ APM/                                    # Root project folder
 * Git (to clone the repository).
 
 ### 1️⃣ Clone the Repository
+
 ```bash
-git clone https://github.com/Nour-Arnous/Application-Performance-Monitoring.git
+git clone [https://github.com/Nour-Arnous/Application-Performance-Monitoring.git](https://github.com/Nour-Arnous/Application-Performance-Monitoring.git)
 cd Application-Performance-Monitoring
 
 ```
+
 ### 2️⃣ Create and Activate a Virtual Environment
 
 * **Windows:**
+
 ```bash
 python -m venv venv
 venv\Scripts\activate
 
+```
+
 * **Linux / macOS:**
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
+
+```
 
 ### 3️⃣ Install Dependencies
 
@@ -105,9 +118,9 @@ source venv/bin/activate
 cd src
 pip install -r requirements.txt
 
+```
 
-> *Note: If you are on Windows and encounter issues with eventlet or redis,
->    make sure you have the correct versions specified in requirements.txt.*
+> *Note: If you are on Windows and encounter issues with eventlet or redis, make sure you have the correct versions specified in requirements.txt.*
 
 ### 4️⃣ Set Up the Database
 
@@ -115,39 +128,57 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py createsuperuser    # (Optional) – for admin access
 
+```
+
 ### 5️⃣ Install & Start Redis
 
 * **Windows:** Download Redis for Windows from [GitHub Releases](https://github.com/tporadowski/redis/releases), install and run it as a service.
 * **Linux / macOS:**
+
 ```bash
 sudo apt install redis-server    # Ubuntu/Debian
 # or
 brew install redis               # macOS
 redis-server
 
+```
+
 * **Verify Redis is running:**
+
 ```bash
 redis-cli ping
 # should return PONG
 
+```
 
 ### 6️⃣ Start the Project (Three Terminals Required)
 
 Open three separate terminal windows in the `src/` folder:
 
 * **Terminal 1 – Main Web Server (Daphne/Django):**
+
 ```bash
 python manage.py runserver
 
+```
+
 * **Terminal 2 – Celery Worker (Background Tasks):**
+
 ```bash
 celery -A project worker -l info -P eventlet
 
+```
+
 *(Note: On Linux/macOS, use `-P gevent` or omit the `-P` flag).*
+
 * **Terminal 3 – Celery Beat (Task Scheduler):**
+
 ```bash
 celery -A project beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 
+```
+
+---
 
 ## Accessing the Application
 
@@ -160,6 +191,7 @@ celery -A project beat -l info --scheduler django_celery_beat.schedulers:Databas
 | **Admin Panel** | `http://127.0.0.1:8000/admin/` |
 | **API Root** | `http://127.0.0.1:8000/api/` |
 
+---
 
 ## API Endpoints (JWT Authentication)
 
@@ -176,6 +208,7 @@ celery -A project beat -l info --scheduler django_celery_beat.schedulers:Databas
 | **GET** | `/api/applications/{id}/forecast/` | Get AI forecast for an application |
 | **GET** | `/api/alerts/` | List alerts |
 
+---
 
 ## The Agent – How to Use It
 
@@ -191,18 +224,28 @@ The agent executable (`APM_Agent.exe`) is available for download from the Home o
 4. Click **Start Monitoring** to send simulated performance data automatically.
 
 ### For Developers (CLI Mode)
+
 Open a terminal in the folder where the agent file is located and run:
+
 ```bash
 APM_Agent.exe --key YOUR_API_KEY --app-id YOUR_APP_ID --interval 5
+
+```
 
 * `--key`: Your API Key.
 * `--app-id`: The numeric ID of your application.
 * `--interval`: Time between each metric send (default = 5 seconds).
+
 > **Configuration File:** The agent automatically saves your settings in `agent_config.ini` next to the executable, avoiding the need to re-enter them next time.
 
+---
+
 ## Testing the System
+
 ### 1. Create a User
+
 Go to `http://127.0.0.1:8000/register/` or via Postman:
+
 ```json
 POST /api/auth/register/
 {
@@ -212,8 +255,12 @@ POST /api/auth/register/
   "email": "test@example.com"
 }
 
+```
+
 ### 2. Create an Application
+
 Via Admin panel (`/admin/monitor/application/add/`) or via API (with JWT token):
+
 ```json
 POST /api/applications/
 {
@@ -221,13 +268,21 @@ POST /api/applications/
   "description": "Testing the system"
 }
 
+```
+
 ### 3. Send Data via the Agent
+
 Run the agent using the generated API Key and Application ID.
+
 ### 4. Check the Dashboard
+
 Open `http://127.0.0.1:8000/dashboard/` to view:
+
 * Updating statistical cards.
 * Real-time line charts showing metrics over time.
 * Request and error distribution charts.
+
+---
 
 ## AI Forecasting (Prophet)
 
@@ -236,7 +291,13 @@ Open `http://127.0.0.1:8000/dashboard/` to view:
 * Requires at least 10 data points to run effectively.
 * Appears on the dashboard as a dashed purple line with a confidence interval.
 
-## 📞 Support & Contact
+---
+
+## Support & Contact
 For any questions or issues:
 * **Developer:** Nour Arnous
 * **Email:** nourarnous.dev@example.com
+
+```
+
+```
