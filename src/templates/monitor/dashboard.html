@@ -4,26 +4,28 @@
 {% block title %}Dashboard - APM{% endblock %}
 
 {% block content %}
-<!-- Header Section with Title and Global Update Controls -->
+
+<!-- Header: Title and Global Update Controls                     -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold text-dark mb-0">
         <i class="fas fa-chart-pie text-primary"></i> Dashboard
     </h4>
     <div>
-        <!-- Last Update Timestamp Display -->
+        <!-- Last update timestamp (filled by JS) -->
         <span id="lastUpdate" class="text-muted small me-3">
             <i class="fas fa-clock"></i> Last Update: --
         </span>
-        <!-- Manual Refresh Button -->
+        <!-- Manual refresh button triggers the main JS function -->
         <button class="refresh-btn" onclick="fetchDataAndRenderCharts()">
             <i class="fas fa-sync-alt"></i> Update
         </button>
     </div>
 </div>
 
-<!-- Time Range Filter & Period Information Bar -->
+<!-- Time Range Filter Bar                                        -->
+<!-- I use three buttons (1h / 24h / 7d) to change the API query  -->
+<!-- parameter 'hours'. The default is 24 hours.                  -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <!-- Time Filter Button Group -->
     <div class="btn-group" role="group" aria-label="Time Range Filter">
         <button type="button" class="btn btn-outline-primary btn-sm time-filter-btn" data-hours="1">Last Hour</button>
         <button type="button" class="btn btn-primary btn-sm time-filter-btn active" data-hours="24">Last 24 Hours</button>
@@ -32,15 +34,17 @@
     <span class="text-muted small">Showing data for selected period</span>
 </div>
 
-<!-- Loading Overlay Indicator -->
+<!-- Loading Indicator (hidden by default, shown during fetches)  -->
 <div id="loadingIndicator" class="loading-overlay">
     <i class="fas fa-spinner fa-spin fa-2x"></i>
     <p class="mt-2">Loading data...</p>
 </div>
 
-<!-- Top-Level Statistical Summary Cards Grid -->
+<!-- Statistical Summary Cards                                    -->
+<!-- Values are populated by dashboard.js from the /api/metrics/  -->
+<!-- response.                                                    -->
 <div class="row g-4 mb-4">
-    <!-- Card 1: Monitored Applications -->
+    <!-- Card 1: Number of monitored applications -->
     <div class="col-md-3 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon"><i class="fas fa-cubes"></i></div>
@@ -49,7 +53,7 @@
             <div class="stat-sub">Monitored Applications</div>
         </div>
     </div>
-    <!-- Card 2: Average Response Time -->
+    <!-- Card 2: Average response time -->
     <div class="col-md-3 col-sm-6">
         <div class="stat-card border-warning">
             <div class="stat-icon"><i class="fas fa-clock"></i></div>
@@ -58,7 +62,7 @@
             <div class="stat-sub">Seconds</div>
         </div>
     </div>
-    <!-- Card 3: Total Requests Count -->
+    <!-- Card 3: Total requests -->
     <div class="col-md-3 col-sm-6">
         <div class="stat-card border-success">
             <div class="stat-icon"><i class="fas fa-exchange-alt"></i></div>
@@ -67,7 +71,7 @@
             <div class="stat-sub">Requests</div>
         </div>
     </div>
-    <!-- Card 4: Total System Errors -->
+    <!-- Card 4: Total errors -->
     <div class="col-md-3 col-sm-6">
         <div class="stat-card border-danger">
             <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
@@ -77,13 +81,14 @@
         </div>
     </div>
 </div>
+<!-- NOTE: The alerts container has been removed from here.       -->
+<!-- Alerts now have their own dedicated page at /alerts/         -->
+<!-- (accessible from the navbar). Keeping them on the dashboard  -->
+<!-- was redundant and cluttered the layout.                      -->
 
-<!-- Dynamic System Alerts Container -->
-<div id="alertsContainer" class="mb-4"></div>
 
-<!-- Main Time-Series Charts Section -->
+<!-- Main Line Chart: Metrics evolution over time                 -->
 <div class="row">
-    <!-- Line Chart for Core Metrics Evolution -->
     <div class="col-12">
         <div class="chart-card">
             <div class="card-title">
@@ -96,7 +101,8 @@
     </div>
 </div>
 
-<!-- Prophet AI Forecast Analytics Chart -->
+<!-- AI Forecast Chart (Prophet)                                  -->
+<!-- Shows predicted response time for the next 60 minutes.       -->
 <div class="row mt-2">
     <div class="col-12">
         <div class="chart-card">
@@ -113,10 +119,11 @@
         </div>
     </div>
 </div>
-
-<!-- Distribution Charts Section (Errors & Requests per Application) -->
+<!-- Distribution Pie Charts: Errors and Requests per Application -->
+<!-- These are most useful when there are multiple applications.  -->
+<!-- With a single app, they will show a solid circle.            -->
 <div class="row">
-    <!-- Pie Chart: Error Distribution -->
+    <!-- Pie Chart: Error distribution -->
     <div class="col-md-6">
         <div class="chart-card">
             <div class="card-title">
@@ -127,7 +134,7 @@
             </div>
         </div>
     </div>
-    <!-- Pie Chart: Request Distribution -->
+    <!-- Pie Chart: Request distribution -->
     <div class="col-md-6">
         <div class="chart-card">
             <div class="card-title">
@@ -140,14 +147,16 @@
     </div>
 </div>
 
-<!-- Restricted Admin Section: Monitored Applications Management Table -->
+<!-- Admin-Only Section: Monitored Applications Management Table  -->
+<!-- Only visible if the logged-in user is staff or superuser.    -->
+<!-- The table is populated dynamically by dashboard.js.          -->
 {% if user.is_staff or user.is_superuser %}
 <div class="row mb-4">
     <div class="col-12">
         <div class="chart-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="card-title mb-0">
-                    <i class="fas fa-cubes text-primary"></i> Monitored Applications & Owners
+                    <i class="fas fa-cubes text-primary"></i> Monitored Applications &amp; Owners
                 </div>
                 <span class="badge bg-primary px-3 py-2" id="tableAppsCount">0 Applications</span>
             </div>
@@ -176,17 +185,19 @@
     </div>
 </div>
 
-<!-- External Link to Django Administration Panel -->
+<!-- External link to Django Admin Panel -->
 <div class="text-center mt-3 mb-4">
     <a href="/admin/" class="btn btn-outline-secondary" target="_blank">
         <i class="fas fa-cog me-1"></i> Open Django Admin Panel
     </a>
 </div>
 {% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
-<!-- External Chart.js and Dashboard Script Dependencies -->
+<!-- Chart.js library from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{% static 'js/dashboard.js' %}"></script>
+<!-- Dashboard logic (fetching data, drawing charts, WebSocket) -->
+<script src="{% static 'js/dashboard.js' %}?v=10"></script>
 {% endblock %}

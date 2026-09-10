@@ -1,25 +1,40 @@
 {% extends 'base.html' %}
 
+{% comment %}
+    Alerts List Template
+    ---------------------
+    Displays a filterable, paginated list of all alerts.
+    I made sure the <option> values in the filter match exactly the values
+    stored in the database (lowercase: info, warning, danger, success),
+    otherwise the filter would return no results.
+{% endcomment %}
+
 {% block content %}
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold text-dark mb-0">System Alerts & Incidents</h3>
+        <h3 class="fw-bold text-dark mb-0">System Alerts &amp; Incidents</h3>
         <span class="badge bg-secondary">Total: {{ page_obj.paginator.count }}</span>
     </div>
 
-    <!-- Filter Bar Card -->
+    <!-- ============================================================ -->
+    <!-- Filter Bar Card                                              -->
+    <!-- ============================================================ -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <form method="GET" action="{% url 'alerts_list' %}" class="row g-3 align-items-end">
-                
+
                 <!-- Severity Filter -->
+                <!-- IMPORTANT: The values below must match the model choices
+                     (info, warning, danger, success). Earlier I used uppercase
+                     values like INFO/WARNING which caused the filter to fail. -->
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-muted">Severity Level</label>
                     <select name="severity" class="form-select">
                         <option value="">All Severities</option>
-                        <option value="CRITICAL" {% if selected_severity == 'CRITICAL' %}selected{% endif %}>Critical</option>
-                        <option value="WARNING" {% if selected_severity == 'WARNING' %}selected{% endif %}>Warning</option>
-                        <option value="INFO" {% if selected_severity == 'INFO' %}selected{% endif %}>Info</option>
+                        <option value="info"    {% if selected_severity == 'info' %}selected{% endif %}>Info</option>
+                        <option value="warning" {% if selected_severity == 'warning' %}selected{% endif %}>Warning</option>
+                        <option value="danger"  {% if selected_severity == 'danger' %}selected{% endif %}>Danger</option>
+                        <option value="success" {% if selected_severity == 'success' %}selected{% endif %}>Success</option>
                     </select>
                 </div>
 
@@ -29,7 +44,7 @@
                     <select name="status" class="form-select">
                         <option value="">All Statuses</option>
                         <option value="unread" {% if selected_status == 'unread' %}selected{% endif %}>Unread / Active</option>
-                        <option value="read" {% if selected_status == 'read' %}selected{% endif %}>Read / Resolved</option>
+                        <option value="read"   {% if selected_status == 'read' %}selected{% endif %}>Read / Resolved</option>
                     </select>
                 </div>
 
@@ -58,7 +73,9 @@
         </div>
     </div>
 
-    <!-- Alerts Table Card -->
+    <!-- ============================================================ -->
+    <!-- Alerts Table Card                                            -->
+    <!-- ============================================================ -->
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -68,7 +85,7 @@
                             <th scope="col" class="ps-4">Severity</th>
                             <th scope="col">Application</th>
                             <th scope="col">Message</th>
-                            <th scope="col">Date & Time</th>
+                            <th scope="col">Date &amp; Time</th>
                             <th scope="col">Status</th>
                             <th scope="col" class="text-end pe-4">Actions</th>
                         </tr>
@@ -76,13 +93,17 @@
                     <tbody>
                         {% for alert in page_obj %}
                         <tr class="{% if not alert.is_read %}table-active-row{% endif %}">
-                            
+
                             <!-- Severity Badge -->
+                            <!-- I map each severity value to a Bootstrap color class:
+                                 danger=red, warning=yellow, success=green, info=blue. -->
                             <td class="ps-4">
-                                {% if alert.severity == 'CRITICAL' %}
-                                    <span class="badge bg-danger text-uppercase">Critical</span>
-                                {% elif alert.severity == 'WARNING' %}
+                                {% if alert.severity == 'danger' %}
+                                    <span class="badge bg-danger text-uppercase">Danger</span>
+                                {% elif alert.severity == 'warning' %}
                                     <span class="badge bg-warning text-dark text-uppercase">Warning</span>
+                                {% elif alert.severity == 'success' %}
+                                    <span class="badge bg-success text-uppercase">Success</span>
                                 {% else %}
                                     <span class="badge bg-info text-dark text-uppercase">Info</span>
                                 {% endif %}
@@ -108,9 +129,9 @@
 
                             <!-- Action Toggle Button -->
                             <td class="text-end pe-4">
-                                <a href="{% url 'toggle_alert_status' alert.id %}" 
+                                <a href="{% url 'toggle_alert_status' alert.id %}"
                                    class="btn btn-sm {% if alert.is_read %}btn-outline-secondary{% else %}btn-outline-success{% endif %}">
-                                   {% if alert.is_read %}Mark Unread{% else %}Mark Resolved{% endif %}
+                                    {% if alert.is_read %}Mark Unread{% else %}Mark Resolved{% endif %}
                                 </a>
                             </td>
                         </tr>
@@ -127,14 +148,17 @@
             </div>
         </div>
 
-        <!-- Pagination Controls Footer -->
+        <!-- ============================================================ -->
+        <!-- Pagination Controls Footer                                   -->
+        <!-- I keep the currently selected filters when navigating pages. -->
+        <!-- ============================================================ -->
         {% if page_obj.has_other_pages %}
         <div class="card-footer bg-white border-0 py-3">
             <nav>
                 <ul class="pagination justify-content-center mb-0">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&severity={{ selected_severity }}&status={{ selected_status }}&app_id={{ selected_app }}">Previous</a>
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&amp;severity={{ selected_severity }}&amp;status={{ selected_status }}&amp;app_id={{ selected_app }}">Previous</a>
                         </li>
                     {% endif %}
 
@@ -144,7 +168,7 @@
 
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&severity={{ selected_severity }}&status={{ selected_status }}&app_id={{ selected_app }}">Next</a>
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&amp;severity={{ selected_severity }}&amp;status={{ selected_status }}&amp;app_id={{ selected_app }}">Next</a>
                         </li>
                     {% endif %}
                 </ul>

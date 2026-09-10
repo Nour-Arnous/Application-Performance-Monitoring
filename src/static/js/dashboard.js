@@ -14,6 +14,23 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Helper: Format a Date object as HH:MM using English digits.
+// I built this manually with padStart() because toLocaleTimeString()
+// can fall back to Arabic numerals on Arabic-locale systems.
+function formatTimeHHMM(dateObj) {
+    const hh = String(dateObj.getHours()).padStart(2, '0');
+    const mm = String(dateObj.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+}
+
+// Helper: Format a Date object as YYYY-MM-DD using English digits.
+function formatDateYMD(dateObj) {
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+}
+
 // Global chart instances and configuration state
 let mainChart = null;
 let forecastChart = null;
@@ -26,9 +43,9 @@ let ws = null;
 document.addEventListener('DOMContentLoaded', () => {
     setupTimeFilterListeners();
     fetchDataAndRenderCharts();
-    fetchForecastData(); // Retrieves AI forecast for the available application
-    fetchDashboardAlerts(); // Fetches active alerts with delete options
-    fetchApplicationsTable(); // Populates applications list for admin/staff
+    fetchForecastData();
+    fetchDashboardAlerts();
+    fetchApplicationsTable();
     connectWebSocket();
 });
 
@@ -37,7 +54,7 @@ function setupTimeFilterListeners() {
     const buttons = document.querySelectorAll('.time-filter-btn');
     buttons.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const currentBtn = e.currentTarget; // تم التعديل إلى currentTarget
+            const currentBtn = e.currentTarget;
             buttons.forEach(b => {
                 b.classList.remove('active', 'btn-primary');
                 b.classList.add('btn-outline-primary');
@@ -85,7 +102,8 @@ function connectWebSocket() {
 // Append new real-time metric point to the main line chart
 function updateChartsWithNewMetric(data) {
     if (!mainChart) return;
-    const time = new Date(data.timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    // I use formatTimeHHMM() to force English digits (HH:MM).
+    const time = formatTimeHHMM(new Date(data.timestamp));
 
     if (mainChart.data.labels.length >= 30) {
         mainChart.data.labels.shift();
@@ -108,16 +126,16 @@ async function fetchDataAndRenderCharts() {
         const response = await fetch(`/api/metrics/?hours=${currentTimeRange}`);
         const data = await response.json();
 
-        // Extract results list if API uses DRF pagination
         const metricsList = Array.isArray(data) ? data : (data.results || []);
 
         updateStatistics(metricsList);
         renderLineChart(metricsList);
         updateDashboardCharts(metricsList);
 
+        // I use formatTimeHHMM() for the last update time.
         const now = new Date();
         document.getElementById('lastUpdate').innerHTML =
-            `<i class="fas fa-clock"></i> Last Update: ${now.toLocaleTimeString('ar-EG')}`;
+            `<i class="fas fa-clock"></i> Last Update: ${formatTimeHHMM(now)}`;
     } catch (error) {
         console.error('Error fetching dashboard metrics:', error);
         document.getElementById('lastUpdate').innerHTML =
@@ -203,7 +221,8 @@ async function fetchDashboardAlerts() {
         container.innerHTML = alertsList.map(alertItem => {
             const alertType = alertItem.severity === 'CRITICAL' ? 'danger' : 'warning';
             const appName = alertItem.app_name || alertItem.application_name || `App #${alertItem.application || ''}`;
-            const timeStr = alertItem.created_at ? new Date(alertItem.created_at).toLocaleTimeString('ar-EG') : '';
+            // I use formatTimeHHMM() to guarantee English digits here as well.
+            const timeStr = alertItem.created_at ? formatTimeHHMM(new Date(alertItem.created_at)) : '';
 
             return `
                     <div class="alert-card ${alertType} mb-2">
@@ -288,7 +307,8 @@ async function fetchApplicationsTable() {
 
         tableBody.innerHTML = appsList.map((app, index) => {
             const ownerDisplay = app.owner_name || app.owner_email || (app.owner ? `User #${app.owner}` : 'N/A');
-            const createdDate = app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A';
+            // I use formatDateYMD() for consistent English date output.
+            const createdDate = app.created_at ? formatDateYMD(new Date(app.created_at)) : 'N/A';
             const appId = app.id || '';
             const appName = app.name || `App #${appId}`;
 
@@ -358,20 +378,18 @@ async function deleteApplication(appId) {
 // Render multi-axis main line chart for timeline metrics
 function renderLineChart(data) {
     const canvas = document.getElementById('mainLineChart');
-    if (!canvas) return; // Guard clause: Ensure canvas element exists in DOM
-    
+    if (!canvas) return;
+
     if (!Array.isArray(data) || data.length === 0) {
         console.warn('No metrics data available for line chart.');
-        return; // Guard clause: Prevent errors if data is empty or invalid
+        return;
     }
 
     const ctx = canvas.getContext('2d');
     const sorted = data.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    const labels = sorted.map(item => {
-        const d = new Date(item.timestamp);
-        return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-    });
+    // I use formatTimeHHMM() so the chart axis always shows English digits.
+    const labels = sorted.map(item => formatTimeHHMM(new Date(item.timestamp)));
 
     const responseData = sorted.map(item => item.response_time || 0);
     const requestData = sorted.map(item => item.request_count || 0);
@@ -412,7 +430,7 @@ function renderLineChart(data) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // Ensures flexible responsiveness inside grid/flex containers
+            maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             scales: {
                 y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Seconds' } },
@@ -425,7 +443,7 @@ function renderLineChart(data) {
 // Render or update the Chart.js forecast instance
 function renderForecastChart(rawData) {
     const canvas = document.getElementById('forecastChart');
-    if (!canvas) return; // Guard clause: Ensure canvas element exists in DOM
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
 
@@ -445,10 +463,11 @@ function renderForecastChart(rawData) {
         return;
     }
 
+    // I use formatTimeHHMM() to force English digits for forecast labels.
     const labels = forecastList.map(item => {
         const timeVal = item.timestamp || item.ds;
         const dateObj = new Date(timeVal);
-        return isNaN(dateObj.getTime()) ? timeVal : dateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        return isNaN(dateObj.getTime()) ? timeVal : formatTimeHHMM(dateObj);
     });
 
     const yhat = forecastList.map(item => Math.max(0, item.yhat || 0));
@@ -498,22 +517,15 @@ function renderForecastChart(rawData) {
                 y: {
                     beginAtZero: true,
                     min: 0,
-                    title: {
-                        display: true,
-                        text: 'Seconds'
-                    }
+                    title: { display: true, text: 'Seconds' }
                 },
                 x: {
-                    title: {
-                        display: true,
-                        text: 'Time'
-                    }
+                    title: { display: true, text: 'Time' }
                 }
             }
         }
     });
 }
-
 
 // Aggregates metrics by application name and updates the pie charts
 function updateDashboardCharts(metricsData) {
@@ -544,7 +556,7 @@ function updateDashboardCharts(metricsData) {
         '#0984e3', '#00b894', '#fdcb6e', '#e17055',
         '#6c5ce7', '#e84393', '#00cec9', '#d63031'
     ];
-    
+
     const colorsSlice = appLabels.map((_, i) => chartColors[i % chartColors.length]);
 
     const reqCanvas = document.getElementById('requestsPieChart');

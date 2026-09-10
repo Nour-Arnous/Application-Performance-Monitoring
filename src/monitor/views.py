@@ -1,5 +1,6 @@
 # Views for the monitor application.
 # Includes HTML views (session-based authentication) and API views (JWT-based authentication).
+
 import uuid
 from datetime import timedelta
 
@@ -7,6 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User  # I added this to check duplicate emails
 from django.contrib import messages
 from django.utils import timezone
 
@@ -26,32 +28,39 @@ from .forecast import generate_forecast_for_app, get_cached_forecast
 
 from django.core.paginator import Paginator
 
+
+# =====================================================================
 # HTML VIEWS (Session-based authentication)
 # These views render HTML pages and use Django's session-based
 # authentication (login_required decorator).
+# =====================================================================
 
 def home(request):
-    # Home page view.
-    # Admins see all applications; regular users see only their own.
-    # I display the list of applications on the home page so users can quickly
-    # see which apps they have. Admins see everything, which is useful for
-    # monitoring the whole system at a glance.
+    """
+    Home page view.
+    Admins see all applications; regular users see only their own.
+    I display the list of applications on the home page so users can quickly
+    see which apps they have. Admins see everything, which is useful for
+    monitoring the whole system at a glance.
+    """
     user_apps = []
     if request.user.is_authenticated:
         if request.user.is_staff or request.user.is_superuser:
             user_apps = Application.objects.all()
         else:
             user_apps = Application.objects.filter(owner=request.user)
-            
+
     return render(request, 'monitor/home.html', {'applications': user_apps})
+
 
 @login_required
 def dashboard(request):
-    # Dashboard view showing core application performance metrics and charts.
-    # Alerts logic removed to streamline the dashboard layout.
-    # I decided to keep the dashboard focused on metrics and charts, and moved
-    # alerts to a separate page. This makes the dashboard cleaner and faster
-    # to load, especially when there are many metrics.
+    """
+    Dashboard view showing core application performance metrics and charts.
+    I decided to keep the dashboard focused on metrics and charts, and moved
+    alerts to a separate page. This makes the dashboard cleaner and faster
+    to load, especially when there are many metrics.
+    """
     if request.user.is_staff or request.user.is_superuser:
         user_apps = Application.objects.all()
         metrics = Metric.objects.all().order_by('-timestamp')[:30]
@@ -66,15 +75,37 @@ def dashboard(request):
     }
     return render(request, 'monitor/dashboard.html', context)
 
+
 def register_view(request):
-    # User registration view.
-    # I'm using Django's built-in UserCreationForm here because it handles
-    # password validation and user creation automatically. This saves time
-    # and reduces the risk of security issues.
+    """
+    User registration view (HTML form).
+    I'm using Django's built-in UserCreationForm here because it handles
+    password validation and user creation automatically. However, that form
+    does NOT check for duplicate emails, so I added a manual check below.
+    """
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            # Extract the email from POST data
+            email = request.POST.get('email', '').strip()
+
+            # Check if the email is already used by another user.
+            # I do this because Django's default User model doesn't enforce
+            # unique emails, so we need to check manually. I use iexact to
+            # make the check case-insensitive (Test@x.com == test@x.com).
+            if email and User.objects.filter(email__iexact=email).exists():
+                messages.error(
+                    request,
+                    'A user with this email already exists. Please use a different email.'
+                )
+                return render(request, 'authentication/register.html', {'form': form})
+
+            # Save the user (create the account)
+            user = form.save(commit=False)
+            if email:
+                user.email = email
+            user.save()
+
             messages.success(request, f'Registration successful, {user.username}. Please log in.')
             return redirect('login')
         else:
@@ -87,10 +118,12 @@ def register_view(request):
 
 
 def login_view(request):
-    # User login view.
-    # I'm using Django's authenticate() function to verify credentials.
-    # If authentication succeeds, I log the user in and redirect them to the dashboard.
-    # If it fails, I show an error message and keep them on the login page.
+    """
+    User login view.
+    I'm using Django's authenticate() function to verify credentials.
+    If authentication succeeds, I log the user in and redirect to the dashboard.
+    If it fails, I show an error message and keep them on the login page.
+    """
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -106,7 +139,7 @@ def login_view(request):
 
 
 def logout_view(request):
-    #User logout view.
+    """User logout view."""
     logout(request)
     messages.info(request, 'You have been logged out.')
     return redirect('home')
@@ -114,10 +147,12 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    # User profile view with summary statistics.
-    # I show the number of applications the user owns and how many unread alerts
-    # they have. For admins, I show global counts instead of user-specific ones.
-    # This gives admins a quick overview of the entire system.
+    """
+    User profile view with summary statistics.
+    I show the number of applications the user owns and how many unread alerts
+    they have. For admins, I show global counts instead of user-specific ones.
+    This gives admins a quick overview of the entire system.
+    """
     if request.user.is_staff or request.user.is_superuser:
         applications_count = Application.objects.all().count()
         alerts_unread = Alert.objects.filter(is_read=False).count()
@@ -127,7 +162,7 @@ def profile_view(request):
             application__owner=request.user,
             is_read=False
         ).count()
-    
+
     context = {
         'applications_count': applications_count,
         'alerts_unread': alerts_unread,
@@ -137,11 +172,13 @@ def profile_view(request):
 
 @login_required
 def manage_apps(request):
-    # Manage and create applications with auto-generated API Keys.
-    # I created this page so users can create new applications and view their
-    # API keys in one place. When a user creates an application, I generate
-    # a random UUID as the API key. This is much more secure than letting
-    # users choose their own keys.
+    """
+    Manage and create applications with auto-generated API Keys.
+    I created this page so users can create new applications and view their
+    API keys in one place. When a user creates an application, I generate
+    a random UUID as the API key. This is much more secure than letting
+    users choose their own keys.
+    """
     if request.method == 'POST':
         app_name = request.POST.get('name')
         description = request.POST.get('description', '')
@@ -172,12 +209,13 @@ def manage_apps(request):
 
 @login_required
 def alerts_list_view(request):
-    # Display a paginated list of alerts with filtering capabilities
-    # by severity, read status, and application.
-    # I added pagination and filtering to make it easier for users to find
-    # relevant alerts. Without these features, the alerts list would become
-    # overwhelming as the system grows.
-
+    """
+    Display a paginated list of alerts with filtering capabilities
+    by severity, read status, and application.
+    I added pagination and filtering to make it easier for users to find
+    relevant alerts. Without these features, the alerts list would become
+    overwhelming as the system grows.
+    """
     # Fetch base queryset according to user roles
     if request.user.is_staff or request.user.is_superuser:
         alerts = Alert.objects.select_related('application').all()
@@ -218,27 +256,33 @@ def alerts_list_view(request):
 
 @login_required
 def toggle_alert_status(request, alert_id):
-    # Toggle the read/unread status of an alert.
-    # This is a simple helper function that lets users mark alerts as read
-    # or unread with a single click. I redirect back to the previous page
-    # so the user doesn't lose their place in the list.
+    """
+    Toggle the read/unread status of an alert.
+    This is a simple helper function that lets users mark alerts as read
+    or unread with a single click. I redirect back to the previous page
+    so the user doesn't lose their place in the list.
+    """
     alert = get_object_or_404(Alert, id=alert_id)
     alert.is_read = not alert.is_read
     alert.save()
-    
+
     return redirect(request.META.get('HTTP_REFERER', 'alerts_list'))
 
 
+# =====================================================================
 # API VIEWS (JWT & API Key based authentication)
 # These views are used by developers and external agents to interact
 # with the system programmatically.
+# =====================================================================
 
 class ApplicationViewSet(viewsets.ModelViewSet):
-    # API ViewSet for managing Applications.
-    # I used a ModelViewSet here because it automatically provides all the
-    # standard CRUD operations (Create, Read, Update, Delete) for applications.
-    # I customized the queryset so that admins see everything and regular users
-    # only see their own applications.
+    """
+    API ViewSet for managing Applications.
+    I used a ModelViewSet here because it automatically provides all the
+    standard CRUD operations (Create, Read, Update, Delete) for applications.
+    I customized the queryset so that admins see everything and regular users
+    only see their own applications.
+    """
     serializer_class = ApplicationSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
@@ -250,18 +294,20 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         return Application.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
-        # I automatically set the owner to the currently logged-in user
-        # This prevents users from creating applications owned by someone else
+        # I automatically set the owner to the currently logged-in user.
+        # This prevents users from creating applications owned by someone else.
         serializer.save(owner=self.request.user)
 
     @action(detail=True, methods=['get'])
     def forecast(self, request, pk=None):
-        # Generate or retrieve cached forecast for an application.
-        # I check the cache first to avoid regenerating the forecast if it's
-        # already available. If not, I generate it and return the result.
-        # This makes the endpoint faster and reduces server load.
+        """
+        Generate or retrieve cached forecast for an application.
+        I check the cache first to avoid regenerating the forecast if it's
+        already available. If not, I generate it and return the result.
+        This makes the endpoint faster and reduces server load.
+        """
         app = self.get_object()
-        
+
         forecast = get_cached_forecast(app.id)
         if not forecast:
             forecast = generate_forecast_for_app(app.id)
@@ -270,7 +316,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
                     {"error": "Not enough data to generate forecast!"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-        
+
         return Response({
             "application_id": app.id,
             "application_name": app.name,
@@ -279,20 +325,22 @@ class ApplicationViewSet(viewsets.ModelViewSet):
 
 
 class MetricViewSet(viewsets.ModelViewSet):
-    # API ViewSet for managing metrics via JWT or API Key.
-    # This is one of the most important parts of the system. It accepts metrics
-    # from both authenticated users (via JWT) and external agents (via API Key).
-    # I also added time filtering so users can retrieve metrics from specific time
-    # ranges (e.g., last 24 hours).
-
+    """
+    API ViewSet for managing metrics via JWT or API Key.
+    This is one of the most important parts of the system. It accepts metrics
+    from both authenticated users (via JWT) and external agents (via API Key).
+    I also added time filtering so users can retrieve metrics from specific
+    time ranges (e.g., last 24 hours).
+    """
     serializer_class = MetricSerializer
     permission_classes = [IsAgentOrAuthenticated]
 
     def get_queryset(self):
-        # Determine the queryset based on user role and authentication method.
-        # Admins see all metrics, regular users see their own app metrics,
-        # and agents see only their app's metrics.
-    
+        """
+        Determine the queryset based on user role and authentication method.
+        Admins see all metrics, regular users see their own app metrics,
+        and agents see only their app's metrics.
+        """
         # Case 1: Authenticated user (JWT)
         if self.request.user and self.request.user.is_authenticated:
             if self.request.user.is_staff or self.request.user.is_superuser:
@@ -306,7 +354,7 @@ class MetricViewSet(viewsets.ModelViewSet):
         # Case 3: No valid authentication
         else:
             return Metric.objects.none()
-        
+
         # Apply time filter if 'hours' parameter is provided
         hours_param = self.request.query_params.get('hours', None)
         if hours_param is not None:
@@ -324,29 +372,51 @@ class MetricViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-timestamp')
 
     def perform_create(self, serializer):
-        # Create a new metric.
-        # I validate that the application exists and belongs to the user or agent.
-        # If everything is valid, I save the metric and broadcast it via WebSocket
-        # so all connected dashboards update in real-time.
-        app_id = self.request.data.get('application')
-        if not app_id:
-            raise ValidationError({"application": "This field is required."})
-        
-        try:
-            if self.request.user and self.request.user.is_authenticated:
+        """
+        Create a new metric.
+
+        IMPORTANT FIX:
+        - If the request comes from an Agent (authenticated via API Key), I
+          IGNORE the 'application' field sent by the client and use the
+          application that owns the API Key instead. This prevents an agent
+          from accidentally (or maliciously) sending data to a wrong
+          application.
+        - If the request comes from a JWT user, I validate that the application
+          ID sent belongs to that user.
+        """
+        # ==============================================================
+        # Case 1: Authenticated user via JWT
+        # ==============================================================
+        if self.request.user and self.request.user.is_authenticated:
+            app_id = self.request.data.get('application')
+            if not app_id:
+                raise ValidationError({"application": "This field is required."})
+            try:
                 app = Application.objects.get(id=app_id, owner=self.request.user)
-            elif hasattr(self.request, '_agent_app'):
-                app = self.request._agent_app
-            else:
-                raise PermissionDenied("Authentication credentials were not provided.")
-        except Application.DoesNotExist:
-            raise ValidationError({"application": "Application not found or access denied."})
-        
+            except Application.DoesNotExist:
+                raise ValidationError(
+                    {"application": "Application not found or access denied."})
+
+        # ==============================================================
+        # Case 2: Agent authenticated via API Key
+        # The application is determined EXCLUSIVELY by the API Key.
+        # The client's 'application' field is completely ignored.
+        # ==============================================================
+        elif hasattr(self.request, '_agent_app'):
+            app = self.request._agent_app  # Set by permissions.py
+
+        # ==============================================================
+        # Case 3: No valid authentication
+        # ==============================================================
+        else:
+            raise PermissionDenied("Authentication credentials were not provided.")
+
+        # Save the metric with the resolved application
         metric = serializer.save(application=app)
-        
-        # Broadcast metric update via WebSocket channels
+
+        # Broadcast the new metric via WebSocket for real-time updates.
         # I wrapped this in a try/except so the API doesn't fail if WebSocket
-        # is not available (e.g., when running without Daphne)
+        # is not available (e.g., when running without Daphne).
         try:
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
@@ -362,26 +432,39 @@ class MetricViewSet(viewsets.ModelViewSet):
 
 
 class AlertViewSet(viewsets.ModelViewSet):
-    # API ViewSet for managing system alerts.
-    # Admins can see all alerts, while regular users can only see alerts
-    # related to their own applications. This ensures data privacy.
+    """
+    API ViewSet for managing system alerts.
+    Admins can see and create alerts for any application.
+    Regular users can only see and create alerts for their own applications.
+    """
+    # I added this queryset attribute because DRF's router needs it
+    # to infer the basename. Without it, we may get an ImproperlyConfigured error.
+    queryset = Alert.objects.all()
     serializer_class = AlertSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """Admins see all alerts; regular users only see their own."""
         if self.request.user.is_staff or self.request.user.is_superuser:
             return Alert.objects.all()
         return Alert.objects.filter(application__owner=self.request.user)
 
     def perform_create(self, serializer):
-        # Create a new alert.
-        # I validate that the application exists and belongs to the user.
+        """
+        Create a new alert.
+        Admins can create alerts for ANY application.
+        Regular users can only create alerts for applications they own.
+        """
         app_id = self.request.data.get('application')
         if not app_id:
             raise ValidationError({"application": "This field is required."})
-            
+
         try:
-            app = Application.objects.get(id=app_id, owner=self.request.user)
+            # Admins bypass the ownership check
+            if self.request.user.is_staff or self.request.user.is_superuser:
+                app = Application.objects.get(id=app_id)
+            else:
+                app = Application.objects.get(id=app_id, owner=self.request.user)
             serializer.save(application=app)
         except Application.DoesNotExist:
             raise ValidationError({"application": "Application not found or access denied."})
