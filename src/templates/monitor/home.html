@@ -91,7 +91,6 @@
     <div class="container">
 
         <!-- Section Title & Intro -->
-        <!-- Section Title & Intro -->
         <div class="text-center mb-5">
             <h2 class="fw-bold text-dark mb-2">
                 <i class="fas fa-info-circle text-primary me-2"></i>About & Usage Guide
@@ -115,9 +114,9 @@
                     </p>
 
                     <!-- Agent Executable Download Button -->
-                    <a href="{% static 'downloads/APM_Agent.exe' %}"
+                    <a href="{% static 'downloads/agent_app.exe' %}"
                         class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-2">
-                        <i class="fas fa-file-download me-2"></i> Download Agent (APM_Agent.exe)
+                        <i class="fas fa-file-download me-2"></i> Download Agent (APM_Agent_app.exe)
                     </a>
                     <span class="text-muted text-center d-block mb-4" style="font-size: 0.78rem;">
                         <i class="fab fa-windows me-1 text-secondary"></i> Standalone agent for Windows (No Python
@@ -131,9 +130,7 @@
                     <ol class="small text-muted ps-3 mb-4">
                         <li class="mb-1">Log in to your account and navigate to <strong>My Apps</strong>.</li>
                         <li class="mb-1">Click <strong>Add New Application</strong> to generate a unique key.</li>
-                        <li class="mb-1">Copy the <code>API Key</code> and note your assigned
-                            <code>Application ID</code>.
-                        </li>
+                        <li class="mb-1">Copy your <code>API Key</code> to authenticate the agent.</li>
                     </ol>
 
                     <!-- Logged-in User Application Status List -->
@@ -144,12 +141,14 @@
                         </span>
 
                         <!-- Direct access using user.applications.all defined in Application model -->
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="d-flex flex-column gap-2">
                             {% for app in applications %}
-                            <span
-                                class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1 small">
-                                {{ app.name }} (ID: {{ app.id }})
-                            </span>
+                            <div class="p-2 bg-light rounded border small">
+                                <span class="fw-bold text-dark d-block">{{ app.name }}</span>
+                                <span class="text-muted text-truncate d-block" style="font-size: 0.75rem;">
+                                    <i class="fas fa-link me-1 text-primary"></i> URL: <code>{{ app.url|default:"Not specified" }}</code>
+                                </span>
+                            </div>
                             {% empty %}
                             <p class="small text-muted mb-0">
                                 No applications registered yet. <a href="{% url 'manage_apps' %}"
@@ -195,12 +194,12 @@
                             </div>
                         </div>
 
-                        <!-- Step 2: Enter Key & App ID -->
+                        <!-- Step 2: Enter Key -->
                         <div class="col-md-6">
                             <div class="bg-white p-3 rounded-3 shadow-sm border h-100">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge bg-primary me-2">Step 2</span>
-                                    <h6 class="fw-bold mb-0 small">Enter Credentials</h6>
+                                    <h6 class="fw-bold mb-0 small">Enter API Key</h6>
                                 </div>
                                 <div class="text-center my-2 bg-light rounded p-2 border border-dashed">
                                     <!-- Added zoomable-img class and title instruction -->
@@ -209,7 +208,7 @@
                                         onerror="this.onerror=null; this.src='https://placehold.co/300x160/e9ecef/495057?text=Step+2:+Paste+API+Key';">
                                 </div>
                                 <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
-                                    Paste your <code>API Key</code> and <code>App ID</code> obtained from your profile.
+                                    Paste your <code>API Key</code> obtained from your profile My Apps.
                                 </p>
                             </div>
                         </div>
@@ -228,7 +227,7 @@
                                         onerror="this.onerror=null; this.src='https://placehold.co/300x160/e9ecef/495057?text=Step+3:+Start+Agent';">
                                 </div>
                                 <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
-                                    Click <strong>Start Monitoring</strong> to begin sending metrics to server.
+                                    Click <strong>Start Monitoring</strong> to begin sending metrics to dashboard.
                                 </p>
                             </div>
                         </div>
@@ -242,7 +241,7 @@
                                 </div>
                                 <div class="p-2 bg-dark text-success font-monospace rounded small my-2"
                                     style="font-size: 0.75rem; word-break: break-all;">
-                                    APM_Agent.exe --key YOUR_KEY --app-id --interval 5
+                                    APM_Agent.exe --key YOUR_API_KEY --interval 5
                                 </div>
                                 <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
                                     Developers can run the agent via Command Prompt / Terminal or background service.
