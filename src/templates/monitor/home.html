@@ -91,12 +91,14 @@
     <div class="container">
 
         <!-- Section Title & Intro -->
+        <!-- Section Title & Intro -->
         <div class="text-center mb-5">
             <h2 class="fw-bold text-dark mb-2">
                 <i class="fas fa-info-circle text-primary me-2"></i>About & Usage Guide
             </h2>
             <p class="text-muted max-w-700 mx-auto">
-                Everything you need to know about setting up and running the APM Monitoring Agent in under 2 minutes.
+                Everything you need to know about setting up and running the APM Monitoring Agent for Response Time,
+                Request Count, and Error tracking in under 2 minutes.
             </p>
         </div>
 
@@ -114,11 +116,13 @@
 
                     <!-- Agent Executable Download Button -->
                     <a href="{% static 'downloads/APM_Agent.exe' %}"
-                        class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-4">
+                        class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-2">
                         <i class="fas fa-file-download me-2"></i> Download Agent (APM_Agent.exe)
                     </a>
-
-                    <hr class="my-3 text-secondary opacity-25">
+                    <span class="text-muted text-center d-block mb-4" style="font-size: 0.78rem;">
+                        <i class="fab fa-windows me-1 text-secondary"></i> Standalone agent for Windows (No Python
+                        required)
+                    </span>
 
                     <!-- How to get Keys Instructions -->
                     <h6 class="fw-bold text-dark mb-2">
@@ -128,7 +132,8 @@
                         <li class="mb-1">Log in to your account and navigate to <strong>My Apps</strong>.</li>
                         <li class="mb-1">Click <strong>Add New Application</strong> to generate a unique key.</li>
                         <li class="mb-1">Copy the <code>API Key</code> and note your assigned
-                            <code>Application ID</code>.</li>
+                            <code>Application ID</code>.
+                        </li>
                     </ol>
 
                     <!-- Logged-in User Application Status List -->
@@ -164,7 +169,8 @@
                         <i class="fas fa-layer-group text-success me-2"></i>Step-by-Step Setup Screenshots
                     </h5>
                     <p class="text-muted small mb-4">
-                        Follow these simple visual steps to connect your agent to the APM platform. <span class="text-primary fw-semibold">(Double-click any image to zoom in)</span>
+                        Follow these simple visual steps to connect your agent to the APM platform. <span
+                            class="text-primary fw-semibold">(Double-click any image to zoom in)</span>
                     </p>
 
                     <!-- Screenshots Cards Grid -->
@@ -180,8 +186,7 @@
                                 <div class="text-center my-2 bg-light rounded p-2 border border-dashed">
                                     <!-- Added zoomable-img class and title instruction -->
                                     <img src="{% static 'images/guide_step1.png' %}" alt="Step 1 Screenshot"
-                                        class="img-fluid rounded zoomable-img"
-                                        title="Double-click to view larger"
+                                        class="img-fluid rounded zoomable-img" title="Double-click to view larger"
                                         onerror="this.onerror=null; this.src='https://placehold.co/300x160/e9ecef/495057?text=Step+1:+Launch+GUI';">
                                 </div>
                                 <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
@@ -200,8 +205,7 @@
                                 <div class="text-center my-2 bg-light rounded p-2 border border-dashed">
                                     <!-- Added zoomable-img class and title instruction -->
                                     <img src="{% static 'images/guide_step2.png' %}" alt="Step 2 Screenshot"
-                                        class="img-fluid rounded zoomable-img"
-                                        title="Double-click to view larger"
+                                        class="img-fluid rounded zoomable-img" title="Double-click to view larger"
                                         onerror="this.onerror=null; this.src='https://placehold.co/300x160/e9ecef/495057?text=Step+2:+Paste+API+Key';">
                                 </div>
                                 <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
@@ -220,8 +224,7 @@
                                 <div class="text-center my-2 bg-light rounded p-2 border border-dashed">
                                     <!-- Added zoomable-img class and title instruction -->
                                     <img src="{% static 'images/guide_step3.png' %}" alt="Step 3 Screenshot"
-                                        class="img-fluid rounded zoomable-img"
-                                        title="Double-click to view larger"
+                                        class="img-fluid rounded zoomable-img" title="Double-click to view larger"
                                         onerror="this.onerror=null; this.src='https://placehold.co/300x160/e9ecef/495057?text=Step+3:+Start+Agent';">
                                 </div>
                                 <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
@@ -239,7 +242,7 @@
                                 </div>
                                 <div class="p-2 bg-dark text-success font-monospace rounded small my-2"
                                     style="font-size: 0.75rem; word-break: break-all;">
-                                    APM_Agent.exe --key YOUR_KEY --app-id  --interval 5
+                                    APM_Agent.exe --key YOUR_KEY --app-id --interval 5
                                 </div>
                                 <p class="text-muted micro-text mb-0" style="font-size: 0.8rem;">
                                     Developers can run the agent via Command Prompt / Terminal or background service.
@@ -288,9 +291,13 @@
         <div class="modal-content bg-transparent border-0">
             <div class="modal-body text-center position-relative p-0">
                 <!-- Close Button -->
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 bg-dark p-2 rounded-circle shadow" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button"
+                    class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3 bg-dark p-2 rounded-circle shadow"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
                 <!-- Enlarged Dynamic Image Container -->
-                <img src="" id="zoomedImageElement" class="img-fluid rounded-4 shadow-lg border border-white border-3 bg-white" alt="Enlarged Guide View">
+                <img src="" id="zoomedImageElement"
+                    class="img-fluid rounded-4 shadow-lg border border-white border-3 bg-white"
+                    alt="Enlarged Guide View">
             </div>
         </div>
     </div>
@@ -307,7 +314,7 @@
         zoomableImages.forEach(img => {
             // Change cursor style to indicate interactivity
             img.style.cursor = "zoom-in";
-            
+
             // Listen for double-click event on the image
             img.addEventListener("dblclick", function () {
                 modalImage.src = this.src; // Set the modal image source to the clicked image
