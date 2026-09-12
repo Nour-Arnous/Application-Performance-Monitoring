@@ -89,8 +89,7 @@ APM/                                    # Root project folder
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone [https://github.com/Nour-Arnous/Application-Performance-Monitoring.git](https://github.com/Nour-Arnous/Application-Performance-Monitoring.git)
-cd Application-Performance-Monitoring
+git clone https://github.com/Nour-Arnous/Application-Performance-Monitoring.git
 
 ```
 
